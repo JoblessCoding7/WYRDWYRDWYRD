@@ -1,0 +1,33 @@
+.entry-animation {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.logo-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-container img {
+  object-fit: contain;
+  max-width: 400px;
+  max-height: 400px;
+}
+
+.logo-container .logo {
+  position: absolute;
+}
+
+.logo-container .slope {
+  position: fixed;
+  height: 200px;
+  background: red;
+  transform-origin: center center;
+}
