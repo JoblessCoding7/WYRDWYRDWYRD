@@ -34,6 +34,6 @@ jobs:
         run: pnpm install
 
       - name: Build and Publish to Oxygen
-        run: npx shopify hydrogen deploy --token $SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN
+        run: npx shopify hydrogen deploy --token ${{ env.SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN }}
         env:
           SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000046722 }}
