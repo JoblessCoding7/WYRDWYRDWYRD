@@ -1,3 +1,4 @@
+import {useState, useEffect} from 'react';
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
@@ -19,6 +20,7 @@ import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import entryStyles from '~/styles/entry.css?url';
+import klaviyoStyles from '~/styles/klaviyo.css?url';
 
 import {Entry} from './components/Entry';
 import {PageLayout} from './components/PageLayout';
@@ -112,6 +114,11 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 
 export function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <html lang="en">
@@ -121,11 +128,17 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
         <link rel="stylesheet" href={entryStyles}></link>
+        <link rel="stylesheet" href={klaviyoStyles}></link>
         <Meta />
         <Links />
+        <script
+          async
+          type="text/javascript"
+          src="https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=SjaanP"
+        ></script>
       </head>
       <body>
-        <Entry />
+        {isClient && <Entry />}
         {/*{children}*/}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
