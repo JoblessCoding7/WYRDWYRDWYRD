@@ -1,0 +1,63 @@
+.klaviyo-container {
+  height: 100vh;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.klaviyo-container .klaviyo-signup-container {
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 1rem;
+}
+
+.klaviyo-container
+  .klaviyo-signup-container
+  .klaviyo-form-container
+  .close-button {
+  float: right;
+  display: none;
+}
+
+.klaviyo-container .klaviyo-form-WRB76G {
+  max-width: 40vw;
+  pointer-events: all;
+}
+
+.klaviyo-container .klaviyo-form-WRB76G form h1 {
+  text-transform: uppercase;
+  font-weight: bolder;
+  font-size: 2em !important;
+}
+
+.klaviyo-container .klaviyo-form-WRB76G form span {
+  font-size: 1em !important;
+}
+
+.klaviyo-container .klaviyo-form-WRB76G form [data-testid='form-component'] {
+  width: 100%;
+}
+
+.klaviyo-container
+  .klaviyo-form-WRB76G
+  form
+  [data-testid='form-component']
+  button {
+  width: 100%;
+  background-color: #000 !important;
+}
+
+@media only screen and (max-width: 768px) {
+  .klaviyo-container .klaviyo-form-WRB76G {
+    max-width: 70vw;
+  }
+
+  .klaviyo-container .klaviyo-signup-container {
+    padding: 0.5rem;
+  }
+}
