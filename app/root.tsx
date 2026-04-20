@@ -21,6 +21,10 @@ import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import entryStyles from '~/styles/entry.css?url';
 import klaviyoStyles from '~/styles/klaviyo.css?url';
+import headerStyles from '~/styles/header.css?url';
+
+/* KT2 ALBUM */
+import kt2AlbumStyles from '~/styles/kt2album.css?url';
 
 import {Entry} from './components/Entry';
 import {PageLayout} from './components/PageLayout';
@@ -47,6 +51,19 @@ export function links() {
     {
       rel: 'preconnect',
       href: 'https://shop.app',
+    },
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.googleapis.com',
+    },
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.gstatic.com',
+      crossOrigin: 'anonymous',
+    },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&display=swap',
     },
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
   ];
@@ -81,7 +98,7 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
 
   const [header] = await Promise.all([
     storefront.query(HEADER_QUERY, {
-      cache: storefront.CacheLong(),
+      cache: storefront.CacheShort(),
       variables: {
         headerMenuHandle: 'main-menu',
       },
@@ -96,7 +113,7 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 
   const footer = storefront
     .query(FOOTER_QUERY, {
-      cache: storefront.CacheLong(),
+      cache: storefront.CacheShort(),
       variables: {
         footerMenuHandle: 'footer',
       },
@@ -129,6 +146,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={appStyles}></link>
         <link rel="stylesheet" href={entryStyles}></link>
         <link rel="stylesheet" href={klaviyoStyles}></link>
+        <link rel="stylesheet" href={headerStyles}></link>
+        <link rel="stylesheet" href={kt2AlbumStyles}></link>
         <Meta />
         <Links />
         <script
@@ -138,8 +157,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         ></script>
       </head>
       <body>
-        {isClient && <Entry />}
-        {/*{children}*/}
+        {/*{isClient && <Entry />}*/}
+        {children}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>

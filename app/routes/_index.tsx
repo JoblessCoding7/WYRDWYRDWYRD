@@ -1,153 +1,88 @@
-import {Await, useLoaderData, Link} from 'react-router';
-import type {Route} from './+types/_index';
-import {Suspense} from 'react';
-import {Image} from '@shopify/hydrogen';
-import type {
-  FeaturedCollectionFragment,
-  RecommendedProductsQuery,
-} from 'storefrontapi.generated';
-import {ProductItem} from '~/components/ProductItem';
+import {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router';
+import {motion} from 'framer-motion';
+import wyrdLogo from '~/assets/WYRD_LOGO.png';
 
-export const meta: Route.MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
-};
-
-export async function loader(args: Route.LoaderArgs) {
-  const deferredData = loadDeferredData(args);
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
-  ]);
-
-  return {
-    featuredCollection: collections.nodes[0],
-  };
-}
-
-function loadDeferredData({context}: Route.LoaderArgs) {
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error: Error) => {
-      console.error(error);
-      return null;
-    });
-
-  return {
-    recommendedProducts,
-  };
-}
+export const meta = () => [{title: 'Wyrd'}];
 
 export default function Homepage() {
-  const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const [animating, setAnimating] = useState(false);
+  const [target, setTarget] = useState<{
+    x: number;
+    y: number;
+    scale: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const calc = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // Logo aspect ratio (1855 x 1029)
+      const imgAspect = 1855 / 1029;
+
+      // Rendered size with object-fit: contain inside 100vw x 100vh
+      let renderedW: number;
+      let renderedH: number;
+      if (vw / vh > imgAspect) {
+        // Height is the constraining dimension
+        renderedH = vh;
+        renderedW = vh * imgAspect;
+      } else {
+        // Width is the constraining dimension
+        renderedW = vw;
+        renderedH = vw / imgAspect;
+      }
+
+      // Header logo target size: clamp(40px, 6vw, 80px)
+      const headerSize = Math.min(Math.max(vw * 0.06, 40), 80);
+
+      // Scale based on rendered width so it fits the header logo
+      const scale = headerSize / renderedW;
+
+      // Header logo center position
+      const headerCenterX = 16 + headerSize / 2;
+      const headerCenterY = 16 + headerSize / 2;
+
+      // Translate from screen center to header logo center
+      const x = headerCenterX - vw / 2;
+      const y = headerCenterY - vh / 2;
+
+      setTarget({x, y, scale});
+    };
+
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
+
+  const handleClick = () => {
+    if (animating || !target) return;
+    setAnimating(true);
+  };
+
   return (
-    <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
-      <RecommendedProducts products={data.recommendedProducts} />
-    </div>
+    <motion.div className="wyrd-home" onClick={handleClick}>
+      <motion.img
+        src={wyrdLogo}
+        alt="WYRD"
+        initial={{scale: 1, x: 0, y: 0}}
+        animate={
+          animating && target
+            ? {scale: target.scale, x: target.x, y: target.y}
+            : {scale: 1, x: 0, y: 0}
+        }
+        transition={{duration: 0.6, ease: [0.4, 0, 0.2, 1]}}
+        onAnimationComplete={() => {
+          if (animating) void navigate('/products/album-product');
+        }}
+        style={{
+          height: 'auto',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      />
+    </motion.div>
   );
 }
-
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
-  );
-}
-
-function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
-  return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
-  );
-}
-
-const FEATURED_COLLECTION_QUERY = `#graphql
-  fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    handle
-  }
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
-    }
-  }
-` as const;
-
-const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    featuredImage {
-      id
-      url
-      altText
-      width
-      height
-    }
-  }
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...RecommendedProduct
-      }
-    }
-  }
-` as const;

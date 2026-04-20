@@ -1,0 +1,575 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   KT2 Album — Kill Thome 2 Product Scene
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Cursor-following hover label ────────────────────────────────────────── */
+.kt2-cursor-label {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9000;
+  pointer-events: none;
+
+  /* pill shape */
+  background: #ffffff;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  padding: 7px 16px;
+
+  /* text */
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #000000;
+  white-space: nowrap;
+
+  /* position is driven by JS transform, opacity by class */
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  /* start at an arbitrary offscreen position so it doesn't flash at (0,0) */
+  transform: translate(-9999px, -9999px);
+}
+
+.kt2-cursor-label--visible {
+  opacity: 1;
+}
+
+/* ── Scene root ──────────────────────────────────────────────────────────── */
+.kt2-scene {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background-image: url(../assets/wyrd_background_purple.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Full-scene scanline overlay ─────────────────────────────────────────── */
+@keyframes scanlines-scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 4px;
+  }
+}
+
+.kt2-scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.18) 6px,
+    rgba(0, 0, 0, 0.18) 10px
+  );
+  animation: scanlines-scroll 0.2s linear infinite;
+}
+
+/* ── Shoebox stage — always centred, never moves ─────────────────────────── */
+.kt2-shoebox-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.kt2-shoebox-stage canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* ── Image carousel — centred overlay strip over the shoebox ─────────────── */
+.kt2-carousel {
+  /* sit dead centre over the shoebox canvas */
+  position: absolute;
+  top: 35%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 2;
+
+  /* horizontal scroll row */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  /* breathing room + keeps items from being cut at edges */
+  padding: 24px 60px;
+
+  /* left/right fade — items dissolve into the scene edges */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+
+  cursor: grab;
+  pointer-events: auto;
+
+  /* suppress text/image selection while dragging */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.kt2-carousel:active {
+  cursor: grabbing;
+}
+
+/* hide scrollbar entirely */
+.kt2-carousel::-webkit-scrollbar {
+  display: none;
+}
+.kt2-carousel {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.kt2-carousel-item {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+
+  /* size from natural image proportions — contain keeps the whole PNG visible */
+  width: clamp(160px, 20vw, 260px);
+  /* height is driven by the image's own aspect ratio */
+  height: auto;
+
+  /* no background — PNGs need to be transparent */
+  background: transparent;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.kt2-carousel-item:hover {
+  transform: scale(1.04);
+}
+
+.kt2-carousel-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  /* preserve PNG transparency */
+  background: transparent;
+  /* block pointer-events on img so drag doesn't trigger browser image-drag */
+  pointer-events: none;
+}
+
+.kt2-carousel-item {
+  cursor: pointer;
+}
+
+/* ── Info panel — bottom-right corner, slides in from the right ──────────── */
+.kt2-info-panel {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  z-index: 3;
+
+  width: clamp(280px, 30vw, 600px);
+  max-height: calc(100dvh - 80px);
+  overflow-y: auto;
+
+  /* pill aesthetic — matches kt2-cursor-label */
+  background: #ffffff;
+  border: 1.5px solid #000000;
+  border-radius: 20px;
+
+  padding: 24px 22px 20px;
+  box-sizing: border-box;
+
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kt2-info-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.kt2-info-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.kt2-info-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+}
+
+/* ── Product title ────────────────────────────────────────────────────────── */
+.kt2-title {
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 800;
+  color: #000000;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* ── Product description ──────────────────────────────────────────────────── */
+.kt2-description {
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 1);
+  margin: 0;
+}
+
+.kt2-description p {
+  margin: 0 0 6px;
+}
+
+.kt2-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Variant options ──────────────────────────────────────────────────────── */
+.kt2-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kt2-option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kt2-option-name {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.kt2-option-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kt2-option-btn {
+  padding: 5px 14px;
+  background: transparent;
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #000000;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.kt2-option-btn:hover:not(:disabled) {
+  border-color: #000000;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.kt2-option-btn--selected {
+  border-color: #000000;
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.kt2-option-btn--unavailable {
+  opacity: 0.3;
+}
+
+.kt2-option-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ── Price + Add to cart — same row ──────────────────────────────────────── */
+.kt2-buy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ── Price ────────────────────────────────────────────────────────────────── */
+.kt2-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #000000;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.kt2-price-sale {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kt2-price-sale s {
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.4;
+}
+
+/* ── Add to cart button — pill, black border ──────────────────────────────── */
+.kt2-buy-row button[type='submit'] {
+  flex: 1;
+  padding: 10px 18px;
+  background: #ffffff;
+  color: #000000;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.kt2-buy-row button[type='submit']:hover:not(:disabled) {
+  background: #000000;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.kt2-buy-row button[type='submit']:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.kt2-buy-row button[type='submit']:disabled {
+  border-color: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.3);
+  cursor: not-allowed;
+}
+
+/* ── Lightbox ────────────────────────────────────────────────────────────── */
+.kt2-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* dark scrim — slightly frosted */
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  cursor: zoom-out;
+}
+
+/* ── Image wrapper — constrained to viewport with breathing room ── */
+.kt2-lightbox-img-wrap {
+  position: relative;
+  max-width: min(90vw, 900px);
+  max-height: 85dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.kt2-lightbox-img {
+  display: block;
+  max-width: 100%;
+  max-height: 85dvh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: transparent;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Shared pill button base — matches kt2-cursor-label language ── */
+.kt2-lightbox-btn {
+  position: fixed;
+  z-index: 10001;
+
+  background: #ffffff;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.kt2-lightbox-btn:hover {
+  background: #000000;
+  color: #ffffff;
+  transform: scale(1.06);
+}
+
+.kt2-lightbox-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── Close — top-right corner ── */
+.kt2-lightbox-close {
+  top: 20px;
+  right: 20px;
+  padding: 8px 14px;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+/* ── Prev / Next — vertically centred on left and right edges ── */
+.kt2-lightbox-prev,
+.kt2-lightbox-next {
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 10px 18px;
+  font-size: 1.1rem;
+  letter-spacing: 0;
+}
+
+.kt2-lightbox-prev:hover,
+.kt2-lightbox-next:hover {
+  transform: translateY(-50%) scale(1.06);
+}
+
+.kt2-lightbox-prev:active,
+.kt2-lightbox-next:active {
+  transform: translateY(-50%) scale(0.97);
+}
+
+.kt2-lightbox-prev {
+  left: 20px;
+}
+
+.kt2-lightbox-next {
+  right: 20px;
+}
+
+/* ── Counter pill — bottom centre ── */
+.kt2-lightbox-counter {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+
+  background: #ffffff;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  padding: 5px 16px;
+
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #000000;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Home splash screen ──────────────────────────────────────────────────── */
+.wyrd-home {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url(../assets/wyrd_background_purple.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  z-index: 100;
+  cursor: pointer;
+}
+
+.wyrd-home img {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Persistent header logo (shown after transition) ─────────────────────── */
+.wyrd-header-logo {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 50;
+  width: clamp(40px, 6vw, 80px);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* ── Responsive adjustments ──────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .kt2-carousel {
+    padding: 16px 16px 12px;
+    gap: 8px;
+  }
+
+  .kt2-carousel-item {
+    width: clamp(140px, 55vw, 200px);
+    height: clamp(140px, 55vw, 200px);
+  }
+
+  .kt2-info-panel {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 50dvh;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+}

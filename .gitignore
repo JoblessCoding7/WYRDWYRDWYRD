@@ -7,3 +7,6 @@ node_modules
 .env
 .shopify
 .react-router
+
+# Windows reserved device name — cannot be created/deleted on Windows
+nul

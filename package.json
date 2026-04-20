@@ -5,6 +5,7 @@
   "version": "2025.7.0",
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/patch-hydrogen-react.mjs",
     "build": "shopify hydrogen build --codegen",
     "dev": "shopify hydrogen dev --codegen",
     "preview": "shopify hydrogen preview --build",
@@ -16,6 +17,7 @@
   "dependencies": {
     "@shopify/hydrogen": "2025.7.0",
     "@types/matter-js": "^0.20.2",
+    "@types/three": "^0.183.1",
     "framer-motion": "^12.23.24",
     "graphql": "^16.10.0",
     "graphql-tag": "^2.12.6",
@@ -25,7 +27,8 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "18.3.1",
     "react-router": "7.9.2",
-    "react-router-dom": "7.9.2"
+    "react-router-dom": "7.9.2",
+    "three": "^0.183.2"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.5",
