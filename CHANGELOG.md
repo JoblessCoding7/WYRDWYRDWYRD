@@ -1463,10 +1463,10 @@
     const withCache = createWithCache({cache, waitUntil, request});
 
     const fetchMyCMS = (query) => {
-  -    return withCache(['my-cms', query], CacheLong(), async (params) => {
+  -    return withCache(['my-cms', query], CacheShort(), async (params) => {
   +    return withCache.run({
   +      cacheKey: ['my-cms', query],
-  +      cacheStrategy: CacheLong(),
+  +      cacheStrategy: CacheShort(),
   +      // Cache if there are no data errors or a specific data that make this result not suited for caching
   +      shouldCacheResult: (result) => !result?.errors,
   +    }, async(params) => {
@@ -1496,7 +1496,7 @@
       body,
     },
     {
-      cacheStrategy: CacheLong(),
+      cacheStrategy: CacheShort(),
       // Cache if there are no data errors or a specific data that make this result not suited for caching
       shouldCacheResponse: (result) => !result?.error,
       cacheKey: ['my-cms', body],

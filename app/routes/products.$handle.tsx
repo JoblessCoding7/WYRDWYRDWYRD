@@ -1,4 +1,4 @@
-import {redirect, useLoaderData} from 'react-router';
+import {redirect, useLoaderData, useNavigate} from 'react-router';
 import type {Route} from './+types/products.$handle';
 import {
   getSelectedProductOptions,
@@ -12,6 +12,10 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {KillThomeTwoProduct} from '~/components/KillThomeTwoProduct';
+import wyrdLogo from '~/assets/WYRD_LOGO.png';
+import {useState, useEffect, useRef} from 'react';
+import {motion} from 'framer-motion';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
@@ -97,6 +101,11 @@ export default function Product() {
 
   const {title, descriptionHtml} = product;
 
+  // Render the KT2 custom scene for the album-product handle
+  if (product.handle === 'album-product') {
+    return <KT2Scene product={product as any} />;
+  }
+
   return (
     <div className="product">
       <ProductImage image={selectedVariant?.image} />
@@ -136,6 +145,82 @@ export default function Product() {
         }}
       />
     </div>
+  );
+}
+
+function KT2Scene({product}: {product: any}) {
+  const navigate = useNavigate();
+  const [exiting, setExiting] = useState(false);
+  const [logoTarget, setLogoTarget] = useState<{
+    x: number;
+    y: number;
+    scale: number;
+  } | null>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+
+  // Calculate the full-screen logo target (reverse of _index.tsx shrink)
+  useEffect(() => {
+    const calc = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const imgAspect = 1855 / 1029;
+      let renderedW: number;
+      if (vw / vh > imgAspect) {
+        renderedW = vh * imgAspect;
+      } else {
+        renderedW = vw;
+      }
+      const headerSize = Math.min(Math.max(vw * 0.06, 40), 80);
+      const scale = renderedW / headerSize; // inverse — grow to full
+      const headerCenterX = 16 + headerSize / 2;
+      const headerCenterY = 16 + headerSize / 2;
+      // From header corner back to screen center
+      const x = vw / 2 - headerCenterX;
+      const y = vh / 2 - headerCenterY;
+      setLogoTarget({x, y, scale});
+    };
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
+
+  const handleLogoClick = () => {
+    if (exiting || !logoTarget) return;
+    setExiting(true);
+    // Fade out the scene
+    if (sceneRef.current) {
+      sceneRef.current.style.transition = 'opacity 0.4s ease-out';
+      sceneRef.current.style.opacity = '0';
+    }
+  };
+
+  return (
+    <>
+      {/* Logo starts at header position and expands to fullscreen on exit */}
+      <motion.img
+        src={wyrdLogo}
+        alt="WYRD"
+        className="wyrd-header-logo"
+        initial={{scale: 1, x: 0, y: 0}}
+        animate={
+          exiting && logoTarget
+            ? {scale: logoTarget.scale, x: logoTarget.x, y: logoTarget.y}
+            : {scale: 1, x: 0, y: 0}
+        }
+        transition={{duration: 0.6, ease: [0.4, 0, 0.2, 1], delay: 0.2}}
+        onAnimationComplete={() => {
+          if (exiting) void navigate('/');
+        }}
+        onClick={handleLogoClick}
+        style={{cursor: 'pointer', transformOrigin: 'center center'}}
+      />
+      <div
+        ref={sceneRef}
+        style={{height: '100dvh', width: '100%', overflow: 'hidden'}}
+      >
+        <KillThomeTwoProduct product={product} />
+      </div>
+    </>
   );
 }
 
@@ -208,6 +293,15 @@ const PRODUCT_FRAGMENT = `#graphql
     }
     adjacentVariants (selectedOptions: $selectedOptions) {
       ...ProductVariant
+    }
+    images(first: 20) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
     }
     seo {
       description

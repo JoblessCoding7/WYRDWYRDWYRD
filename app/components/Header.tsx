@@ -26,9 +26,9 @@ export function Header({
   const {shop, menu} = header;
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
+      {/*<NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
         <strong>{shop.name}</strong>
-      </NavLink>
+      </NavLink>*/}
       <HeaderMenu
         menu={menu}
         viewport="desktop"
@@ -101,15 +101,15 @@ function HeaderCtas({
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
     <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
+      {/*<HeaderMenuMobileToggle />*/}
+      {/*<NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
             {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
           </Await>
         </Suspense>
       </NavLink>
-      <SearchToggle />
+      <SearchToggle />*/}
       <CartToggle cart={cart} />
     </nav>
   );
@@ -143,6 +143,7 @@ function CartBadge({count}: {count: number | null}) {
   return (
     <a
       href="/cart"
+      className="cart-badge"
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -154,7 +155,7 @@ function CartBadge({count}: {count: number | null}) {
         } as CartViewPayload);
       }}
     >
-      Cart {count === null ? <span>&nbsp;</span> : count}
+      Cart {count === null ? <span>[&nbsp;]</span> : <span>[{count}]</span>}
     </a>
   );
 }

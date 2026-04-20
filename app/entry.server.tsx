@@ -26,11 +26,13 @@ export default async function handleRequest(
       'https://idgqpd-gb.myshopify.com',
       'https://static.klaviyo.com',
       'https://static-tracking.klaviyo.com',
+      'https://fonts.googleapis.com',
       'https://wyrd.com',
       'https://www.wyrd.com',
     ],
     fontSrc: [
       "'self'",
+      'https://fonts.googleapis.com',
       'https://fonts.gstatic.com',
       'https://cdn.shopify.com',
       'https://fast.a.klaviyo.com',

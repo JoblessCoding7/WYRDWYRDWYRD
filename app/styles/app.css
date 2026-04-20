@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&display=swap');
+
 :root {
   --aside-width: 400px;
   --cart-aside-summary-height-with-discount: 300px;
@@ -6,6 +8,19 @@
   --header-height: 64px;
   --color-dark: #000;
   --color-light: #fff;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-optical-sizing: auto;
+  background-image: url(../assets/wyrd_background_purple.png);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 img {
@@ -162,52 +177,29 @@ button.reset:hover:not(:has(> *)) {
 * components/Header
 * --------------------------------------------------
 */
-.header {
+
+/* ── Cart badge in header ── */
+.cart-badge {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  text-decoration: none;
+  display: inline-flex;
   align-items: center;
-  background: #fff;
-  display: flex;
-  height: var(--header-height);
-  padding: 0 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  gap: 4px;
+  transition: opacity 0.15s ease;
 }
 
-.header-menu-mobile-toggle {
-  @media (min-width: 48em) {
-    display: none;
-  }
+.cart-badge:hover {
+  opacity: 0.7;
 }
 
-.header-menu-mobile {
-  display: flex;
-  flex-direction: column;
-  grid-gap: 1rem;
-}
-
-.header-menu-desktop {
-  display: none;
-  grid-gap: 1rem;
-  @media (min-width: 45em) {
-    display: flex;
-    grid-gap: 1rem;
-    margin-left: 3rem;
-  }
-}
-
-.header-menu-item {
-  cursor: pointer;
-}
-
-.header-ctas {
-  align-items: center;
-  display: flex;
-  grid-gap: 1rem;
-  margin-left: auto;
-}
-
-.header-ctas > * {
-  min-width: fit-content;
+.cart-badge span {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 /*
@@ -238,6 +230,231 @@ button.reset:hover:not(:has(> *)) {
 * components/Cart
 * --------------------------------------------------
 */
+
+/* ── Cart aside panel overrides ── */
+aside {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+}
+
+aside header h3 {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* close link in aside header */
+aside header .close {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #000;
+}
+
+/* ── Cart line items ── */
+.cart-line {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.875rem 0;
+}
+
+.cart-line p,
+.cart-line small,
+.cart-line li {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+}
+
+.cart-line p strong {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Quantity row ── */
+.cart-line-quantity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.cart-line-quantity small {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+/* +/- buttons */
+.cart-line-quantity button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: #ffffff;
+  color: #000000;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.cart-line-quantity button:hover:not(:disabled) {
+  background: #000000;
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+.cart-line-quantity button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.cart-line-quantity button:disabled {
+  border-color: rgba(0, 0, 0, 0.18);
+  color: rgba(0, 0, 0, 0.25);
+  cursor: not-allowed;
+}
+
+/* Remove button */
+.cart-line-quantity button[aria-label='Remove'],
+.cart-line button[type='submit'] {
+  width: auto;
+  height: auto;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: #ffffff;
+  color: #000000;
+  border: 1.5px solid #000000;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.cart-line button[type='submit']:hover:not(:disabled) {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* ── Cart summary / totals ── */
+.cart-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 12px 0 8px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cart-summary-aside h4,
+.cart-summary-page h4 {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 8px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* ── Continue to Checkout button ── */
+.cart-summary-aside a[href],
+.cart-summary-page a[href] {
+  display: block;
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: #ffffff;
+  color: #000000;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.cart-summary-aside a[href]:hover,
+.cart-summary-page a[href]:hover {
+  background: #000000;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.cart-summary-aside a[href]:active,
+.cart-summary-page a[href]:active {
+  transform: translateY(0);
+}
+
+/* ── Discount / gift card inputs ── */
+.cart-discount input[type='text'] {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.cart-discount input[type='text']:focus {
+  border-color: #000000;
+}
+
+.cart-discount button,
+.cart-summary-aside button[type='submit'],
+.cart-summary-page button[type='submit'] {
+  padding: 6px 14px;
+  background: #ffffff;
+  color: #000000;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.cart-discount button:hover,
+.cart-summary-aside button[type='submit']:hover,
+.cart-summary-page button[type='submit']:hover {
+  background: #000000;
+  color: #ffffff;
+}
 .cart-main {
   height: 100%;
   max-height: calc(100vh - var(--cart-aside-summary-height));
