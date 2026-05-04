@@ -52,10 +52,44 @@ function FooterMenu({
           item.url.includes(primaryDomainUrl)
             ? new URL(item.url).pathname
             : item.url;
+        const isInstagram = item.title.toLowerCase() === 'instagram';
+        const label = isInstagram ? (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-label="Instagram"
+            role="img"
+          >
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle
+              cx="17.5"
+              cy="6.5"
+              r="0.8"
+              fill="currentColor"
+              stroke="none"
+            />
+          </svg>
+        ) : (
+          item.title
+        );
         const isExternal = !url.startsWith('/');
         return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
-            {item.title}
+          <a
+            href={url}
+            key={item.id}
+            rel="noopener noreferrer"
+            target="_blank"
+            aria-label={isInstagram ? 'Instagram' : undefined}
+          >
+            {label}
           </a>
         ) : (
           <NavLink
@@ -65,7 +99,7 @@ function FooterMenu({
             style={activeLinkStyle}
             to={url}
           >
-            {item.title}
+            {label}
           </NavLink>
         );
       })}

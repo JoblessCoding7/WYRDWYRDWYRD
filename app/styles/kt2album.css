@@ -76,7 +76,25 @@
   animation: scanlines-scroll 0.2s linear infinite;
 }
 
-/* ── Shoebox stage — always centred, never moves ─────────────────────────── */
+/* ── Light beam PNG — centred behind the Three.js canvas ──────────────────── */
+.kt2-light-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+
+  /* fill the scene but never overflow or distort */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Shoebox stage — always centred, never moves ───────────────────────── */
 .kt2-shoebox-stage {
   position: absolute;
   top: 0;
@@ -85,6 +103,14 @@
   height: 100%;
   z-index: 1;
   pointer-events: auto;
+
+  /* blur eases in when the box is opened */
+  filter: blur(0px);
+  transition: filter 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kt2-shoebox-stage--blurred {
+  filter: blur(8px);
 }
 
 .kt2-shoebox-stage canvas {
@@ -97,26 +123,22 @@
 .kt2-carousel {
   /* sit dead centre over the shoebox canvas */
   position: absolute;
-  top: 35%;
+  top: 50%;
   left: 0;
   right: 0;
   transform: translateY(-50%);
   z-index: 2;
 
-  /* horizontal scroll row */
+  /* horizontal scroll row — overflow hidden so only the visible strip shows */
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
   gap: 20px;
 
-  overflow-x: auto;
-  overflow-y: visible;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 
-  /* breathing room + keeps items from being cut at edges */
-  padding: 24px 60px;
+  /* breathing room top/bottom; no horizontal padding so items bleed to edges */
+  padding: 24px 0;
 
   /* left/right fade — items dissolve into the scene edges */
   -webkit-mask-image: linear-gradient(
@@ -140,28 +162,25 @@
   /* suppress text/image selection while dragging */
   user-select: none;
   -webkit-user-select: none;
+
+  /* hide any scrollbar just in case */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.kt2-carousel::-webkit-scrollbar {
+  display: none;
 }
 
 .kt2-carousel:active {
   cursor: grabbing;
 }
 
-/* hide scrollbar entirely */
-.kt2-carousel::-webkit-scrollbar {
-  display: none;
-}
-.kt2-carousel {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
 .kt2-carousel-item {
   flex: 0 0 auto;
-  scroll-snap-align: center;
 
-  /* size from natural image proportions — contain keeps the whole PNG visible */
-  width: clamp(160px, 20vw, 260px);
-  /* height is driven by the image's own aspect ratio */
+  /* enlarged — fills more of the viewport */
+  width: clamp(220px, 28vw, 380px);
   height: auto;
 
   /* no background — PNGs need to be transparent */
@@ -194,10 +213,9 @@
 /* ── Info panel — bottom-right corner, slides in from the right ──────────── */
 .kt2-info-panel {
   position: absolute;
-  bottom: 32px;
+  bottom: 100px;
   right: 32px;
-  z-index: 3;
-
+  z-index: 10000;
   width: clamp(280px, 30vw, 600px);
   max-height: calc(100dvh - 80px);
   overflow-y: auto;
@@ -519,16 +537,17 @@
 
 /* ── Home splash screen ──────────────────────────────────────────────────── */
 .wyrd-home {
-  position: fixed;
-  inset: 0;
+  /* fill the flex main slot — same pattern as .kt2-scene */
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   background-image: url(../assets/wyrd_background_purple.png);
   background-size: cover;
   background-repeat: no-repeat;
-  z-index: 100;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .wyrd-home img {
@@ -543,7 +562,7 @@
   position: fixed;
   top: 16px;
   left: 16px;
-  z-index: 50;
+  z-index: 100;
   width: clamp(40px, 6vw, 80px);
   pointer-events: auto;
   cursor: pointer;
