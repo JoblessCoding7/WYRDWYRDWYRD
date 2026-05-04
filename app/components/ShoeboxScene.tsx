@@ -2,14 +2,14 @@ import {useEffect, useRef} from 'react';
 import type {BufferGeometry, Mesh} from 'three';
 
 // Per-face texture imports
-import texBoxBack from '~/assets/shoebox_mapping_textures/box_side_back.png';
-import texBoxFront from '~/assets/shoebox_mapping_textures/box_side_botom.png';
-import texBoxLeft from '~/assets/shoebox_mapping_textures/box_side_left.png';
-import texBoxRight from '~/assets/shoebox_mapping_textures/box_side_right.png';
-import texLidBack from '~/assets/shoebox_mapping_textures/lid_side_back.png';
-import texLidLeft from '~/assets/shoebox_mapping_textures/lid_side_left.png';
-import texLidRight from '~/assets/shoebox_mapping_textures/lid_side_right.png';
-import texLidTop from '~/assets/shoebox_mapping_textures/lid_side_top.png';
+import texBoxBack from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-05-box-side-front-back.png';
+import texBoxFront from '~/assets/shoebox_mapping_textures/KT2_Box mapping-01-box-front-side.png';
+import texBoxLeft from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-04-box-right-side.png';
+import texBoxRight from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-02-box-label-side.png';
+import texLidBack from '~/assets/shoebox_mapping_textures/KT2_Box mapping-09-lid-back.png';
+import texLidLeft from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-06-lid-left.png';
+import texLidRight from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-08-lid-right.png';
+import texLidTop from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-07-lid.png';
 
 interface ShoeboxSceneProps {
   onOpen: () => void;
@@ -67,21 +67,17 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
       import('three'),
       import('three/examples/jsm/postprocessing/EffectComposer.js'),
       import('three/examples/jsm/postprocessing/RenderPass.js'),
-      import('three/examples/jsm/postprocessing/RenderPixelatedPass.js'),
       import('three/examples/jsm/postprocessing/UnrealBloomPass.js'),
-      import('three/examples/jsm/postprocessing/FilmPass.js'),
       import('three/examples/jsm/postprocessing/OutputPass.js'),
-      import('three/examples/jsm/postprocessing/ShaderPass.js'),
+      import('three/examples/jsm/environments/RoomEnvironment.js'),
     ]).then(
       ([
         THREE,
         {EffectComposer},
         {RenderPass},
-        {RenderPixelatedPass},
         {UnrealBloomPass},
-        {FilmPass},
         {OutputPass},
-        {ShaderPass},
+        {RoomEnvironment},
       ]) => {
         if (disposed || !canvasRef.current) return;
 
@@ -89,10 +85,15 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         const renderer = new THREE.WebGLRenderer({
           canvas,
           alpha: true,
-          antialias: false,
+          antialias: true,
+          powerPreference: 'high-performance',
         });
-        renderer.setPixelRatio(1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setClearColor(0x000000, 0);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.85;
         const W = canvas.offsetWidth || window.innerWidth || 600;
         const H = canvas.offsetHeight || window.innerHeight || 420;
         renderer.setSize(W, H, false);
@@ -104,70 +105,57 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         camera.lookAt(0, 0.5, 0);
 
         // ── Lighting ──────────────────────────────────────────────────────────────
-        scene.add(new THREE.AmbientLight(0xffffff, 1.4));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+        // Key light — casts sharp shadows from upper-right
         const dir = new THREE.DirectionalLight(0xffffff, 1.2);
-        dir.position.set(3, 6, 5);
+        dir.position.set(4, 8, 6);
+        dir.castShadow = true;
+        dir.shadow.mapSize.set(1024, 1024);
+        dir.shadow.camera.near = 0.5;
+        dir.shadow.camera.far = 30;
         scene.add(dir);
-        const fill = new THREE.DirectionalLight(0xffffff, 0.4);
-        fill.position.set(-4, 2, -3);
+
+        // Fill light — cool-tinted from the left to soften shadows
+        const fill = new THREE.DirectionalLight(0xddeeff, 0.25);
+        fill.position.set(-5, 2, -2);
         scene.add(fill);
 
-        // ── Post-processing (PS2 vibe) ────────────────────────────────────────────
+        // Specular point light — gives the gloss hotspot on the box surface
+        const spec = new THREE.PointLight(0xffffff, 1.6, 18);
+        spec.position.set(2, 5, 7);
+        scene.add(spec);
+
+        // Rim light — subtle back-edge highlight
+        const rim = new THREE.DirectionalLight(0xffffff, 0.2);
+        rim.position.set(-2, -1, -6);
+        scene.add(rim);
+
+        // ── Environment map (PMREM from neutral grey) for physical reflections ──
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+        const neutralEnv = pmremGenerator.fromScene(
+          new RoomEnvironment(),
+        ).texture;
+        scene.environment = neutralEnv;
+        pmremGenerator.dispose();
+
+        // ── Post-processing (clean / glossy) ─────────────────────────────────────
         const composer = new EffectComposer(renderer);
 
         // 1. Base render
         composer.addPass(new RenderPass(scene, camera));
 
-        // 2. Pixelation
-        const pixelPass = new RenderPixelatedPass(2, scene, camera);
-        composer.addPass(pixelPass);
-
-        // 3. Bloom
+        // 2. Subtle bloom — just enough to make specular highlights glow
         const bloomPass = new UnrealBloomPass(
           new THREE.Vector2(W, H),
-          0.4,
-          0.6,
-          0.85,
+          0.18, // strength  — very restrained
+          0.4, // radius
+          0.88, // threshold — only the brightest highlights bloom
         );
         composer.addPass(bloomPass);
 
-        // 4. Film grain
-        const filmPass = new FilmPass(0.35, false);
-        composer.addPass(filmPass);
-
-        // 5. Scanlines
-        const scanlineShader = {
-          uniforms: {
-            tDiffuse: {value: null},
-            lineWidth: {value: 2.0},
-            intensity: {value: 0.25},
-            resolution: {value: H},
-          },
-          vertexShader: /* glsl */ `
-            varying vec2 vUv;
-            void main() {
-              vUv = uv;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `,
-          fragmentShader: /* glsl */ `
-            uniform sampler2D tDiffuse;
-            uniform float lineWidth;
-            uniform float intensity;
-            uniform float resolution;
-            varying vec2 vUv;
-            void main() {
-              vec4 color = texture2D(tDiffuse, vUv);
-              float scanline = mod(floor(vUv.y * resolution / lineWidth), 2.0);
-              color.rgb *= 1.0 - intensity * scanline;
-              gl_FragColor = color;
-            }
-          `,
-        };
-        const scanlinePass = new ShaderPass(scanlineShader);
-        composer.addPass(scanlinePass);
-
-        // 6. Output
+        // 3. Output (tone-mapping + sRGB conversion)
         composer.addPass(new OutputPass());
 
         // ── Helpers ───────────────────────────────────────────────────────────────
@@ -182,6 +170,20 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         const geometries: BufferGeometry[] = [];
         const materials: InstanceType<typeof THREE.MeshStandardMaterial>[] = [];
 
+        // Plain colour face — used for all interior surfaces
+        function makeColorFace(w: number, h: number, color = 0x333333): Mesh {
+          const geo = new THREE.PlaneGeometry(w, h);
+          geometries.push(geo);
+          const mat = new THREE.MeshStandardMaterial({
+            color,
+            side: THREE.DoubleSide,
+            roughness: 0.8,
+            metalness: 0.0,
+          });
+          materials.push(mat);
+          return new THREE.Mesh(geo, mat);
+        }
+
         function makeFace(
           w: number,
           h: number,
@@ -189,91 +191,28 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         ): Mesh {
           const geo = new THREE.PlaneGeometry(w, h);
           geometries.push(geo);
-          const mat = new THREE.MeshStandardMaterial({
+          // MeshPhysicalMaterial gives us roughness + clearcoat for a glossy finish
+          const mat = new THREE.MeshPhysicalMaterial({
             map: tex,
             side: THREE.DoubleSide,
+            roughness: 0.25, // low roughness = sharp specular highlight
+            metalness: 0.0, // cardboard, not metal
+            clearcoat: 0.6, // lacquer-style gloss layer on top
+            clearcoatRoughness: 0.1,
+            envMapIntensity: 1.2, // how strongly it reflects the env map
+            transparent: true, // respect PNG alpha channel
+            alphaTest: 0.01, // discard pixels below 1% opacity
           });
-          materials.push(mat);
+          materials.push(mat as any);
           return new THREE.Mesh(geo, mat);
         }
-
-        // ── God rays — fixed in world space behind the box ────────────────────────
-        const godRaysMat = new THREE.ShaderMaterial({
-          uniforms: {
-            uTime: {value: 0},
-            uColor: {value: new THREE.Color(0xffffff)},
-          },
-          vertexShader: /* glsl */ `
-            varying vec2 vUv;
-            void main() {
-              vUv = uv;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `,
-          fragmentShader: /* glsl */ `
-            uniform float uTime;
-            uniform vec3 uColor;
-            varying vec2 vUv;
-
-            float hash(float n) {
-              return fract(sin(n) * 43758.5453123);
-            }
-
-            float beam(vec2 uv, float angle, float width, float len) {
-              vec2 dir = vec2(cos(angle), sin(angle));
-              float d = abs(dot(uv, vec2(-dir.y, dir.x)));
-              float l = dot(uv, dir);
-              float falloff = smoothstep(0.0, len, l) * (1.0 - smoothstep(len * 0.5, len, l));
-              return smoothstep(width, 0.0, d) * falloff;
-            }
-
-            void main() {
-              vec2 uv = vUv - 0.5;
-              float dist = length(uv);
-
-              float rays = 0.0;
-              for (int i = 0; i < 24; i++) {
-                float fi = float(i);
-                float baseAngle = (fi / 24.0) * 6.28318;
-                float angleJitter = hash(fi * 1.7) * 0.4 - 0.2;
-                float angle = baseAngle + angleJitter + uTime * 0.12;
-                float pulse = 0.5 + 0.5 * sin(uTime * (0.4 + hash(fi * 3.1) * 0.8) + fi * 2.3);
-                float width = (0.004 + hash(fi * 5.3) * 0.03) * (0.6 + 0.4 * pulse);
-                float len = 0.15 + hash(fi * 7.9) * 0.45 + pulse * 0.15;
-                float brightness = 0.5 + hash(fi * 11.1) * 0.5;
-                rays += beam(uv, angle, width, len) * brightness;
-              }
-
-              float core = smoothstep(0.18, 0.0, dist) * 0.7;
-              rays += core;
-
-              float radialFade = 1.0 - smoothstep(0.0, 0.52, dist);
-              float alpha = rays * radialFade * 0.65;
-
-              vec3 col = mix(uColor, vec3(1.0, 0.97, 0.88), core);
-              gl_FragColor = vec4(col, alpha);
-            }
-          `,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-          side: THREE.DoubleSide,
-        });
-
-        const godRaysGeo = new THREE.PlaneGeometry(30, 30);
-        geometries.push(godRaysGeo);
-        const godRaysMesh = new THREE.Mesh(godRaysGeo, godRaysMat);
-        // Center at the lookAt point and face directly toward the camera
-        godRaysMesh.position.set(6, -2.5, -10);
-        godRaysMesh.lookAt(camera.position);
-        godRaysMesh.renderOrder = -1;
-        scene.add(godRaysMesh);
 
         // ── Dimensions ───────────────────────────────────────────────────────────
         const LW = 2.8;
         const DEPTH_SCALE = 1.6;
         const LD = LW * (722 / 974) * DEPTH_SCALE;
-        const LH = LW * (158 / 966);
+        const LH = LW * (158 / 966) * 1.5; // taller lid
+        const LID_OVERHANG = 0.28; // how far lid rim drops below box top
 
         // ── Root group — lid + box animate together ───────────────────────────────
         const rootGroup = new THREE.Group();
@@ -284,10 +223,11 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         rootGroup.add(lidPivot);
 
         const lidGroup = new THREE.Group();
-        lidGroup.position.set(0, LH / 2, LD / 2);
+        // Lower lid so the rim drops LID_OVERHANG below the box top (y=0)
+        lidGroup.position.set(0, LH / 2 - LID_OVERHANG, LD / 2);
         lidPivot.add(lidGroup);
 
-        const LID_W = (LW / 1.18) * 2;
+        const LID_W = (LW / 1.12) * 2; // wider — overhangs box sides
 
         const lTop = makeFace(LID_W, LD, loadTex(texLidTop));
         lTop.rotation.x = -Math.PI / 2;
@@ -303,26 +243,33 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         lBack.position.set(0, 0, -LD / 2);
         lidGroup.add(lBack);
 
-        const lLeft = makeFace(LH, LD, loadTex(texLidRight));
+        const texLeft = loadTex(texLidLeft);
+        texLeft.repeat.y = -1;
+        texLeft.offset.y = 1;
+        const lLeft = makeFace(LH, LD, texLeft);
         lLeft.rotation.y = Math.PI / 2;
         lLeft.rotation.z = Math.PI / 2;
-        lLeft.position.set(-LW / 1.18, 0, 0);
+        lLeft.position.set(-LW / 1.12, 0, 0);
         lidGroup.add(lLeft);
 
-        const lRight = makeFace(LH, LD, loadTex(texLidLeft));
+        const texRight = loadTex(texLidRight);
+        texRight.repeat.y = -1;
+        texRight.offset.y = 1;
+        const lRight = makeFace(LH, LD, texRight);
         lRight.rotation.y = -Math.PI / 2;
         lRight.rotation.z = -Math.PI / 2;
-        lRight.position.set(LW / 1.18, 0, 0);
+        lRight.position.set(LW / 1.12, 0, 0);
         lidGroup.add(lRight);
 
-        const lInside = makeFace(LID_W, LD, loadTex(texLidTop));
+        // Lid interior bottom — off-black, no texture
+        const lInside = makeColorFace(LID_W, LD);
         lInside.rotation.x = Math.PI / 2;
         lInside.position.set(0, -LH / 2, 0);
         lidGroup.add(lInside);
 
         // ── Box ───────────────────────────────────────────────────────────────────
         const BD = LD;
-        const BH = BD * (314 / 690);
+        const BH = BD * (314 / 690) * 0.8; // shorter box
         const BW = BD * (958 / 691);
         const BOX_INSET = 0.1;
 
@@ -332,13 +279,19 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         boxGroup.position.set(0, -BH / 2, 0);
         rootGroup.add(boxGroup);
 
-        const bLeft = makeFace(BH, BD, loadTex(texBoxRight));
+        const texBLeft = loadTex(texBoxRight);
+        texBLeft.repeat.set(-1, 1);
+        texBLeft.offset.set(1, 0);
+        const bLeft = makeFace(BH, BD, texBLeft);
         bLeft.rotation.y = Math.PI / 2;
         bLeft.rotation.z = Math.PI / 2;
         bLeft.position.set(-(LW / 1.17 - BOX_INSET), 0, 0);
         boxGroup.add(bLeft);
 
-        const bRight = makeFace(BH, BD, loadTex(texBoxLeft));
+        const texBRight2 = loadTex(texBoxLeft);
+        texBRight2.repeat.set(-1, 1);
+        texBRight2.offset.set(1, 0);
+        const bRight = makeFace(BH, BD, texBRight2);
         bRight.rotation.y = -Math.PI / 2;
         bRight.rotation.z = -Math.PI / 2;
         bRight.position.set(LW / 1.17 - BOX_INSET, 0, 0);
@@ -357,6 +310,12 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         bBottom.rotation.x = Math.PI / 2;
         bBottom.position.set(0, -BH / 2, 0);
         boxGroup.add(bBottom);
+
+        // Box interior top opening — off-black face visible when lid lifts
+        const bInterior = makeColorFace(BW, BD);
+        bInterior.rotation.x = Math.PI / 2;
+        bInterior.position.set(0, BH / 2, 0);
+        boxGroup.add(bInterior);
 
         // ── Raycasting ────────────────────────────────────────────────────────────
         const lidMeshes: Mesh[] = [];
@@ -576,7 +535,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
             composer.setSize(cw, ch);
             camera.aspect = cw / ch;
             camera.updateProjectionMatrix();
-            scanlinePass.uniforms['resolution'].value = ch;
           }
 
           // Idle — rotate and bob when not engaged and not dragging
@@ -599,8 +557,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
             onOpenCalled = true;
             onOpenRef.current();
           }
-
-          godRaysMat.uniforms.uTime.value = performance.now() * 0.001;
 
           composer.render();
 
@@ -627,8 +583,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
           canvas.style.cursor = 'default';
           geometries.forEach((g) => g.dispose());
           materials.forEach((m) => m.dispose());
-          godRaysMat.dispose();
-          godRaysGeo.dispose();
           renderer.dispose();
         };
 

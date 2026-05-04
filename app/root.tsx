@@ -22,6 +22,8 @@ import appStyles from '~/styles/app.css?url';
 import entryStyles from '~/styles/entry.css?url';
 import klaviyoStyles from '~/styles/klaviyo.css?url';
 import headerStyles from '~/styles/header.css?url';
+import cartStyles from '~/styles/cart.css?url';
+import footerStyles from '~/styles/footer.css?url';
 
 /* KT2 ALBUM */
 import kt2AlbumStyles from '~/styles/kt2album.css?url';
@@ -148,6 +150,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={klaviyoStyles}></link>
         <link rel="stylesheet" href={headerStyles}></link>
         <link rel="stylesheet" href={kt2AlbumStyles}></link>
+        <link rel="stylesheet" href={cartStyles}></link>
+        <link rel="stylesheet" href={footerStyles}></link>
         <Meta />
         <Links />
         <script

@@ -1,0 +1,314 @@
+/*
+* --------------------------------------------------
+* components/Cart
+* --------------------------------------------------
+*/
+
+/* ── Cart aside panel overrides ── */
+aside {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+}
+
+aside header h3 {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* close link in aside header */
+aside header .close {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #000;
+  width: fit-content;
+}
+
+/* ── Cart line items ── */
+.cart-line {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.875rem 0;
+}
+
+.cart-line p,
+.cart-line small,
+.cart-line li {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+}
+
+.cart-details ul {
+  padding-left: 0;
+}
+
+.cart-line p strong {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.product-detail-row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.product-detail-row a {
+  color: #000;
+  text-decoration: none;
+  max-width: 200px;
+}
+
+.product-detail-row .product-price {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* ── Quantity row ── */
+.cart-line-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ── Quantity stepper pill ────────────────────────────────────────── */
+.cart-qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  overflow: hidden;
+  height: 28px;
+}
+
+.cart-qty-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 100%;
+  padding: 0;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.cart-qty-btn:disabled {
+  color: rgba(0, 0, 0, 0.25);
+  cursor: not-allowed;
+}
+
+.cart-qty-count {
+  padding: 0 10px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #000000;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Remove button */
+.cart-line-quantity button[aria-label='Remove'],
+.cart-line button[type='submit'] {
+  width: auto;
+  height: auto;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-transform: capitalize;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.cart-line button[type='submit']:hover:not(:disabled) {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* ── Cart summary / totals ── */
+.cart-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 12px 0 8px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cart-summary-aside h4,
+.cart-summary-page h4 {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 8px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* ── Continue to Checkout button ── */
+.cart-summary-aside a[href],
+.cart-summary-page a[href] {
+  display: block;
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: #000000;
+  color: #ffffff;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.cart-summary-aside a[href]:hover,
+.cart-summary-page a[href]:hover {
+  background: #ffffff;
+  color: #000000;
+  transform: translateY(-1px);
+}
+
+.cart-summary-aside a[href]:active,
+.cart-summary-page a[href]:active {
+  transform: translateY(0);
+}
+
+/* ── Discount / gift card inputs ── */
+.cart-discount input[type='text'] {
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.cart-discount input[type='text']:focus {
+  border-color: #000000;
+}
+
+.cart-discount button,
+.cart-summary-aside button[type='submit'],
+.cart-summary-page button[type='submit'] {
+  padding: 6px 14px;
+  background: #ffffff;
+  color: #000000;
+  border: 1.5px solid #000000;
+  border-radius: 999px;
+  font-family: 'Zalando Sans Expanded', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.cart-discount button:hover,
+.cart-summary-aside button[type='submit']:hover,
+.cart-summary-page button[type='submit']:hover {
+  background: #000000;
+  color: #ffffff;
+}
+.cart-main {
+  height: 100%;
+  max-height: calc(100vh - var(--cart-aside-summary-height));
+  overflow-y: auto;
+  width: auto;
+}
+
+.cart-main.with-discount {
+  max-height: calc(100vh - var(--cart-aside-summary-height-with-discount));
+}
+
+.cart-line {
+  display: flex;
+  padding: 0.75rem 0;
+}
+
+.cart-line-img-wrap {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  margin-right: 0.75rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-line-img-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cart-summary-page {
+  position: relative;
+}
+
+.cart-summary-aside {
+  background: white;
+  border-top: 1px solid var(--color-dark);
+  bottom: 0;
+  padding-top: 0.75rem;
+  position: absolute;
+  width: calc(var(--aside-width) - 40px);
+}
+
+.cart-line-quantity {
+  display: flex;
+}
+
+.cart-discount {
+  align-items: center;
+  display: flex;
+  margin-top: 0.25rem;
+}
+
+.cart-subtotal {
+  align-items: center;
+  display: flex;
+}
