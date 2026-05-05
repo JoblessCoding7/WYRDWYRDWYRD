@@ -39,3 +39,16 @@
   height: 28px;
   display: block;
 }
+
+@media only screen and (max-width: 768px) {
+  .footer-menu {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  .footer-menu a {
+    font-size: 0.9em;
+    max-width: 250px;
+    min-width: unset;
+  }
+}

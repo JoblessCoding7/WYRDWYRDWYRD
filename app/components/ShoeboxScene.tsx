@@ -101,7 +101,7 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         // ── Scene / Camera ────────────────────────────────────────────────────────
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
-        camera.position.set(-6.764, 2.55, 10.863);
+        camera.position.set(-6.764, 2.55, 16);
         camera.lookAt(0, 0.5, 0);
 
         // ── Lighting ──────────────────────────────────────────────────────────────
