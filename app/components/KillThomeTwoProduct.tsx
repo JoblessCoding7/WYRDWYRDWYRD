@@ -35,6 +35,12 @@ type LightboxImage =
 export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  // true only on devices with a fine pointer (mouse/trackpad) — evaluated
+  // client-side so it's always accurate after hydration
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    setIsDesktop(!window.matchMedia('(pointer: coarse)').matches);
+  }, []);
   const [lightboxImage, setLightboxImage] = useState<LightboxImage | null>(
     null,
   );
@@ -65,12 +71,17 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     setIsOpen(true);
   }, []);
 
-  const handleHoverChange = useCallback((hovered: boolean) => {
-    setIsHovered(hovered);
-  }, []);
+  const handleHoverChange = useCallback(
+    (hovered: boolean) => {
+      if (!isDesktop) return;
+      setIsHovered(hovered);
+    },
+    [isDesktop],
+  );
 
-  // Drive label position directly via DOM — no React re-render per frame
+  // Drive label position directly via DOM — desktop only, no re-render per frame
   useEffect(() => {
+    if (!isDesktop) return;
     const stage = stageRef.current;
     const label = labelRef.current;
     if (!stage || !label) return;
@@ -82,7 +93,7 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
 
     stage.addEventListener('mousemove', onMove);
     return () => stage.removeEventListener('mousemove', onMove);
-  }, []);
+  }, [isDesktop]);
 
   // Open lightbox — exposed to carousel items via data attribute click
   const openLightbox = useCallback(
@@ -134,10 +145,13 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     let dragDidMove = false;
     let dragStartX = 0;
     let dragScrollLeft = 0;
+    // Hoisted so touch handlers can read/write them
+    let pos = 0;
+    let setWidth = 0;
 
     // Wait one frame for the DOM to paint so offsetWidth is correct
     rafId = requestAnimationFrame(() => {
-      // ── Measure one set width (the middle clone) ──────────────────────────
+      // ── Measure one set width (the middle clone) ─────────────────────────────────
       // The carousel contains 3× the images: [copy A | original | copy B]
       // We auto-scroll through the original, and when we hit the start of
       // copy B we silently jump back to the start of the original.
@@ -146,18 +160,14 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       const setCount = items.length / 3;
 
       // Width of exactly one full set (gap included)
-      // Use the first `setCount` items to measure
-      let setWidth = 0;
       const gap = 20; // must match CSS gap
       for (let i = 0; i < setCount; i++) {
         setWidth += items[i].offsetWidth + gap;
       }
 
       // Start scrolled to the beginning of the original (middle) set
-      // Use a float accumulator so sub-pixel speeds (e.g. 0.2) work correctly —
-      // scrollLeft rounds to integers on many browsers so we can't increment it
-      // directly with small values.
-      let pos = setWidth;
+      // Use a float accumulator so sub-pixel speeds work correctly
+      pos = setWidth;
       carousel.scrollLeft = pos;
 
       // ── Animation tick ────────────────────────────────────────────────────
@@ -212,6 +222,49 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       isPausedRef.current = true;
     };
 
+    // ── Touch swipe ──────────────────────────────────────────────
+    let touchStartX = 0;
+    let touchScrollLeft = 0;
+    let touchDidMove = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].pageX;
+      touchScrollLeft = carousel.scrollLeft;
+      touchDidMove = false;
+      isDragging = true;
+      isPausedRef.current = true;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const walk = (e.touches[0].pageX - touchStartX) * 1.2;
+      if (Math.abs(walk) > 6) touchDidMove = true;
+      // Update pos so auto-scroll resumes from the right place
+      pos = touchScrollLeft - walk;
+      // Wrap pos within bounds
+      if (pos >= setWidth * 2) pos -= setWidth;
+      if (pos < 0) pos += setWidth;
+      carousel.scrollLeft = pos;
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      isDragging = false;
+      isPausedRef.current = false;
+
+      // Treat as a tap if the finger barely moved — open lightbox
+      if (!touchDidMove) {
+        const touch = e.changedTouches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        const item = target?.closest(
+          '.kt2-carousel-item',
+        ) as HTMLElement | null;
+        if (item) {
+          const rawIdx = Number(item.dataset.index);
+          if (!Number.isNaN(rawIdx)) openLightbox(rawIdx % images.length);
+        }
+      }
+    };
+
     // ── Click — open lightbox for the tapped item (any clone) ────────────
     const onClick = (e: MouseEvent) => {
       if (dragDidMove) return;
@@ -232,6 +285,9 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     carousel.addEventListener('mouseup', onMouseUp);
     carousel.addEventListener('mouseleave', onMouseLeave);
     carousel.addEventListener('click', onClick);
+    carousel.addEventListener('touchstart', onTouchStart, {passive: true});
+    carousel.addEventListener('touchmove', onTouchMove, {passive: true});
+    carousel.addEventListener('touchend', onTouchEnd);
 
     return () => {
       cancelAnimationFrame(rafId);
@@ -241,6 +297,9 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       carousel.removeEventListener('mouseup', onMouseUp);
       carousel.removeEventListener('mouseleave', onMouseLeave);
       carousel.removeEventListener('click', onClick);
+      carousel.removeEventListener('touchstart', onTouchStart);
+      carousel.removeEventListener('touchmove', onTouchMove);
+      carousel.removeEventListener('touchend', onTouchEnd);
     };
   }, [isOpen, images, openLightbox]);
 
@@ -307,10 +366,19 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
         <ShoeboxScene onOpen={handleOpen} onHoverChange={handleHoverChange} />
       </div>
 
-      {/* ── Cursor-following hover label ── */}
+      {/* ── Cursor label — follows cursor on desktop, centred on mobile ── */}
       <div
         ref={labelRef}
-        className={`kt2-cursor-label${isHovered && !isOpen ? ' kt2-cursor-label--visible' : ''}`}
+        className={[
+          'kt2-cursor-label',
+          isDesktop ? 'kt2-cursor-label--desktop' : 'kt2-cursor-label--mobile',
+          // visible: desktop=when hovering, mobile=until box opens
+          !isOpen && (isDesktop ? isHovered : true)
+            ? 'kt2-cursor-label--visible'
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         aria-hidden="true"
       >
         What makes Thome a misfit kid?

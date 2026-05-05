@@ -1,8 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────────────────
-   KT2 Album — Kill Thome 2 Product Scene
-   ───────────────────────────────────────────────────────────────────────────── */
-
-/* ── Cursor-following hover label ────────────────────────────────────────── */
 .kt2-cursor-label {
   position: fixed;
   top: 0;
@@ -10,13 +5,11 @@
   z-index: 9000;
   pointer-events: none;
 
-  /* pill shape */
   background: #ffffff;
   border: 1.5px solid #000000;
   border-radius: 999px;
   padding: 7px 16px;
 
-  /* text */
   font-family: inherit;
   font-size: 1rem;
   font-weight: 700;
@@ -24,11 +17,9 @@
   color: #000000;
   white-space: nowrap;
 
-  /* position is driven by JS transform, opacity by class */
   opacity: 0;
   transition: opacity 0.2s ease;
 
-  /* start at an arbitrary offscreen position so it doesn't flash at (0,0) */
   transform: translate(-9999px, -9999px);
 }
 
@@ -36,7 +27,16 @@
   opacity: 1;
 }
 
-/* ── Scene root ──────────────────────────────────────────────────────────── */
+/* Mobile — centred over the shoebox, z-index above canvas but below scanlines */
+.kt2-cursor-label--mobile {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* override the offscreen default transform — JS never touches this */
+  transform: translate(-50%, -50%) !important;
+  z-index: 2;
+}
+
 .kt2-scene {
   position: relative;
   width: 100%;
@@ -50,7 +50,6 @@
   justify-content: center;
 }
 
-/* ── Full-scene scanline overlay ─────────────────────────────────────────── */
 @keyframes scanlines-scroll {
   from {
     background-position: 0 0;
@@ -76,7 +75,6 @@
   animation: scanlines-scroll 0.2s linear infinite;
 }
 
-/* ── Light beam PNG — centred behind the Three.js canvas ──────────────────── */
 .kt2-light-beam {
   position: absolute;
   top: 50%;
@@ -84,7 +82,6 @@
   transform: translate(-50%, -50%);
   z-index: 0;
 
-  /* fill the scene but never overflow or distort */
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -94,7 +91,6 @@
   user-select: none;
 }
 
-/* ── Shoebox stage — always centred, never moves ───────────────────────── */
 .kt2-shoebox-stage {
   position: absolute;
   top: 0;
@@ -104,7 +100,6 @@
   z-index: 1;
   pointer-events: auto;
 
-  /* blur eases in when the box is opened */
   filter: blur(0px);
   transition: filter 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -119,17 +114,14 @@
   display: block;
 }
 
-/* ── Image carousel — centred overlay strip over the shoebox ─────────────── */
 .kt2-carousel {
-  /* sit dead centre over the shoebox canvas */
   position: absolute;
-  top: 50%;
+  top: 38%;
   left: 0;
   right: 0;
   transform: translateY(-50%);
   z-index: 2;
 
-  /* horizontal scroll row — overflow hidden so only the visible strip shows */
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -137,10 +129,8 @@
 
   overflow: hidden;
 
-  /* breathing room top/bottom; no horizontal padding so items bleed to edges */
   padding: 24px 0;
 
-  /* left/right fade — items dissolve into the scene edges */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -159,11 +149,9 @@
   cursor: grab;
   pointer-events: auto;
 
-  /* suppress text/image selection while dragging */
   user-select: none;
   -webkit-user-select: none;
 
-  /* hide any scrollbar just in case */
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -179,11 +167,9 @@
 .kt2-carousel-item {
   flex: 0 0 auto;
 
-  /* enlarged — fills more of the viewport */
   width: clamp(220px, 28vw, 380px);
   height: auto;
 
-  /* no background — PNGs need to be transparent */
   background: transparent;
 
   transition:
@@ -200,9 +186,7 @@
   width: 100%;
   height: auto;
   object-fit: contain;
-  /* preserve PNG transparency */
   background: transparent;
-  /* block pointer-events on img so drag doesn't trigger browser image-drag */
   pointer-events: none;
 }
 
@@ -210,17 +194,16 @@
   cursor: pointer;
 }
 
-/* ── Info panel — bottom-right corner, slides in from the right ──────────── */
 .kt2-info-panel {
   position: absolute;
-  bottom: 100px;
+  bottom: 24px;
   right: 32px;
   z-index: 10000;
   width: clamp(280px, 30vw, 600px);
-  max-height: calc(100dvh - 80px);
+  /* leave room so the panel never overlaps the footer */
+  max-height: calc(100% - 80px);
   overflow-y: auto;
 
-  /* pill aesthetic — matches kt2-cursor-label */
   background: #ffffff;
   border: 1.5px solid #000000;
   border-radius: 20px;
@@ -245,7 +228,6 @@
   border-radius: 2px;
 }
 
-/* ── Product title ────────────────────────────────────────────────────────── */
 .kt2-title {
   margin: 0;
   font-size: clamp(1rem, 2vw, 1.35rem);
@@ -256,7 +238,6 @@
   text-transform: uppercase;
 }
 
-/* ── Product description ──────────────────────────────────────────────────── */
 .kt2-description {
   font-size: 1rem;
   font-weight: 400;
@@ -272,7 +253,6 @@
   margin-bottom: 0;
 }
 
-/* ── Variant options ──────────────────────────────────────────────────────── */
 .kt2-options {
   display: flex;
   flex-direction: column;
@@ -335,7 +315,6 @@
   cursor: not-allowed;
 }
 
-/* ── Price + Add to cart — same row ──────────────────────────────────────── */
 .kt2-buy-row {
   display: flex;
   align-items: center;
@@ -344,7 +323,6 @@
   margin-top: 4px;
 }
 
-/* ── Price ────────────────────────────────────────────────────────────────── */
 .kt2-price {
   font-size: 1rem;
   font-weight: 700;
@@ -365,7 +343,6 @@
   opacity: 0.4;
 }
 
-/* ── Add to cart button — pill, black border ──────────────────────────────── */
 .kt2-buy-row button[type='submit'] {
   flex: 1;
   padding: 10px 18px;
@@ -402,7 +379,6 @@
   cursor: not-allowed;
 }
 
-/* ── Lightbox ────────────────────────────────────────────────────────────── */
 .kt2-lightbox {
   position: fixed;
   inset: 0;
@@ -411,7 +387,6 @@
   align-items: center;
   justify-content: center;
 
-  /* dark scrim — slightly frosted */
   background: rgba(0, 0, 0, 0.88);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -419,11 +394,10 @@
   cursor: zoom-out;
 }
 
-/* ── Image wrapper — constrained to viewport with breathing room ── */
 .kt2-lightbox-img-wrap {
   position: relative;
-  max-width: min(90vw, 900px);
-  max-height: 85dvh;
+  max-width: min(92vw, 900px);
+  max-height: 80dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -433,7 +407,7 @@
 .kt2-lightbox-img {
   display: block;
   max-width: 100%;
-  max-height: 85dvh;
+  max-height: 80dvh;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -443,7 +417,6 @@
   -webkit-user-select: none;
 }
 
-/* ── Shared pill button base — matches kt2-cursor-label language ── */
 .kt2-lightbox-btn {
   position: fixed;
   z-index: 10001;
@@ -475,7 +448,6 @@
   transform: scale(0.97);
 }
 
-/* ── Close — top-right corner ── */
 .kt2-lightbox-close {
   top: 20px;
   right: 20px;
@@ -484,7 +456,6 @@
   letter-spacing: 0;
 }
 
-/* ── Prev / Next — vertically centred on left and right edges ── */
 .kt2-lightbox-prev,
 .kt2-lightbox-next {
   top: 50%;
@@ -512,7 +483,6 @@
   right: 20px;
 }
 
-/* ── Counter pill — bottom centre ── */
 .kt2-lightbox-counter {
   position: fixed;
   bottom: 24px;
@@ -535,9 +505,7 @@
   pointer-events: none;
 }
 
-/* ── Home splash screen ──────────────────────────────────────────────────── */
 .wyrd-home {
-  /* fill the flex main slot — same pattern as .kt2-scene */
   width: 100%;
   height: 100%;
   display: flex;
@@ -557,7 +525,6 @@
   user-select: none;
 }
 
-/* ── Persistent header logo (shown after transition) ─────────────────────── */
 .wyrd-header-logo {
   position: fixed;
   top: 16px;
@@ -568,27 +535,86 @@
   cursor: pointer;
 }
 
-/* ── Responsive adjustments ──────────────────────────────────────────────── */
+.kt2-cursor-label {
+  font-weight: 900;
+}
+
+@media only screen and (max-width: 768px) {
+  .wyrd-home img {
+    height: 100% !important;
+  }
+
+  .kt2-cursor-label {
+    font-size: 0.8rem;
+  }
+
+  .kt2-title {
+    max-width: 300px;
+  }
+
+  .kt2-description {
+    font-size: 0.8rem;
+  }
+}
+
 @media (max-width: 640px) {
+  /* Carousel — smaller items, tighter gap on mobile */
   .kt2-carousel {
-    padding: 16px 16px 12px;
-    gap: 8px;
+    top: 35%;
+    gap: 12px;
+    padding: 16px 0;
   }
 
   .kt2-carousel-item {
-    width: clamp(140px, 55vw, 200px);
-    height: clamp(140px, 55vw, 200px);
+    width: clamp(140px, 42vw, 220px);
+    max-height: 40vh;
   }
 
+  /* Info panel — sheet from bottom on mobile */
   .kt2-info-panel {
-    bottom: 0;
+    bottom: 5rem;
     right: 0;
     left: 0;
     width: 100%;
-    border-radius: 20px 20px 0 0;
-    max-height: 50dvh;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
+    max-width: 350px;
+    border-radius: 20px;
+    max-height: 42dvh;
+    margin: 0 auto;
+  }
+
+  /* Lightbox — tighter on small screens */
+  .kt2-lightbox-img-wrap {
+    max-width: 96vw;
+    max-height: 72dvh;
+  }
+
+  .kt2-lightbox-img {
+    max-height: 72dvh;
+  }
+
+  .kt2-lightbox-close {
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+
+  .kt2-lightbox-prev,
+  .kt2-lightbox-next {
+    padding: 8px 14px;
+    font-size: 1rem;
+  }
+
+  .kt2-lightbox-prev {
+    left: 8px;
+  }
+
+  .kt2-lightbox-next {
+    right: 8px;
+  }
+
+  .kt2-lightbox-counter {
+    bottom: 16px;
+    font-size: 0.65rem;
   }
 }
