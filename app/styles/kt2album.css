@@ -196,7 +196,7 @@
 
 .kt2-info-panel {
   position: absolute;
-  bottom: 24px;
+  bottom: 10dvh;
   right: 32px;
   z-index: 10000;
   width: clamp(280px, 30vw, 600px);
