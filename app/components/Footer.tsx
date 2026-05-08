@@ -6,18 +6,20 @@ interface FooterProps {
   footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   publicStoreDomain: string;
+  className?: string;
 }
 
 export function Footer({
   footer: footerPromise,
   header,
   publicStoreDomain,
+  className,
 }: FooterProps) {
   return (
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="footer">
+          <footer className={['footer', className].filter(Boolean).join(' ')}>
             {footer?.menu && header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.menu}

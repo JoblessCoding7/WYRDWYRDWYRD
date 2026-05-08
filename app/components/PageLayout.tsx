@@ -1,11 +1,11 @@
 import {Await, Link, useLocation} from 'react-router';
 import {Suspense, useId} from 'react';
+import {Aside, useAside} from '~/components/Aside';
 import type {
   CartApiQueryFragment,
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
@@ -32,10 +32,35 @@ export function PageLayout({
   isLoggedIn,
   publicStoreDomain,
 }: PageLayoutProps) {
-  const location = useLocation();
-
   return (
     <Aside.Provider>
+      <PageContent
+        cart={cart}
+        footer={footer}
+        header={header}
+        isLoggedIn={isLoggedIn}
+        publicStoreDomain={publicStoreDomain}
+      >
+        {children}
+      </PageContent>
+    </Aside.Provider>
+  );
+}
+
+function PageContent({
+  cart,
+  children,
+  footer,
+  header,
+  isLoggedIn,
+  publicStoreDomain,
+}: PageLayoutProps) {
+  const location = useLocation();
+  const {type} = useAside();
+  const cartOpen = type === 'cart';
+
+  return (
+    <>
       <CartAside cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
@@ -47,13 +72,14 @@ export function PageLayout({
           publicStoreDomain={publicStoreDomain}
         />
       )}
-      <main>{children}</main>
+      <main className={cartOpen ? 'page-blurred' : ''}>{children}</main>
       <Footer
         footer={footer}
         header={header}
         publicStoreDomain={publicStoreDomain}
+        className={cartOpen ? 'page-blurred' : ''}
       />
-    </Aside.Provider>
+    </>
   );
 }
 
