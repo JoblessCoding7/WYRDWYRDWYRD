@@ -1,8 +1,4 @@
-/*
-* --------------------------------------------------
-* components/Footer
-* --------------------------------------------------
-*/
+
 .footer {
   background: var(--color-dark);
   margin-top: auto;
@@ -33,7 +29,7 @@
   text-decoration: none;
 }
 
-/* Instagram icon — match the visual weight of the text links */
+
 .footer-menu a svg {
   width: 28px;
   height: 28px;

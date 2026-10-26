@@ -27,12 +27,12 @@
   opacity: 1;
 }
 
-/* Mobile — centred over the shoebox, z-index above canvas but below scanlines */
+
 .kt2-cursor-label--mobile {
   position: absolute;
   top: 50%;
   left: 50%;
-  /* override the offscreen default transform — JS never touches this */
+
   transform: translate(-50%, -50%) !important;
   z-index: 2;
 }
@@ -199,7 +199,7 @@
   right: 32px;
   z-index: 10000;
   width: clamp(280px, 30vw, 600px);
-  /* leave room so the panel never overlaps the footer */
+
   max-height: calc(100% - 80px);
   overflow-y: auto;
 
@@ -557,7 +557,7 @@
 }
 
 @media (max-width: 640px) {
-  /* Carousel — smaller items, tighter gap on mobile */
+
   .kt2-carousel {
     top: 35%;
     gap: 12px;
@@ -569,7 +569,7 @@
     max-height: 40vh;
   }
 
-  /* Info panel — sheet from bottom on mobile */
+
   .kt2-info-panel {
     bottom: 5rem;
     right: 0;
@@ -581,7 +581,7 @@
     margin: 0 auto;
   }
 
-  /* Lightbox — tighter on small screens */
+
   .kt2-lightbox-img-wrap {
     max-width: 96vw;
     max-height: 72dvh;

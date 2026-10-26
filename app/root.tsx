@@ -25,7 +25,7 @@ import headerStyles from '~/styles/header.css?url';
 import cartStyles from '~/styles/cart.css?url';
 import footerStyles from '~/styles/footer.css?url';
 
-/* KT2 ALBUM */
+
 import kt2AlbumStyles from '~/styles/kt2album.css?url';
 
 import {Entry} from './components/Entry';
@@ -161,7 +161,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
         ></script>
       </head>
       <body>
-        {/*{isClient && <Entry />}*/}
+        {                           }
         {children}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />

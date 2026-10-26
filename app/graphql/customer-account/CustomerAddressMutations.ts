@@ -1,4 +1,4 @@
-// NOTE: https://shopify.dev/docs/api/customer/latest/mutations/customerAddressUpdate
+
 export const UPDATE_ADDRESS_MUTATION = `#graphql
   mutation customerAddressUpdate(
     $address: CustomerAddressInput!
@@ -23,7 +23,7 @@ export const UPDATE_ADDRESS_MUTATION = `#graphql
   }
 ` as const;
 
-// NOTE: https://shopify.dev/docs/api/customer/latest/mutations/customerAddressDelete
+
 export const DELETE_ADDRESS_MUTATION = `#graphql
   mutation customerAddressDelete(
     $addressId: ID!
@@ -40,7 +40,7 @@ export const DELETE_ADDRESS_MUTATION = `#graphql
   }
 ` as const;
 
-// NOTE: https://shopify.dev/docs/api/customer/latest/mutations/customerAddressCreate
+
 export const CREATE_ADDRESS_MUTATION = `#graphql
   mutation customerAddressCreate(
     $address: CustomerAddressInput!

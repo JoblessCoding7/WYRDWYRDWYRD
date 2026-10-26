@@ -1,4 +1,4 @@
-// NOTE: https://shopify.dev/docs/api/customer/latest/objects/Customer
+
 export const CUSTOMER_FRAGMENT = `#graphql
   fragment Customer on Customer {
     id
@@ -29,7 +29,7 @@ export const CUSTOMER_FRAGMENT = `#graphql
   }
 ` as const;
 
-// NOTE: https://shopify.dev/docs/api/customer/latest/queries/customer
+
 export const CUSTOMER_DETAILS_QUERY = `#graphql
   query CustomerDetails($language: LanguageCode) @inContext(language: $language) {
     customer {

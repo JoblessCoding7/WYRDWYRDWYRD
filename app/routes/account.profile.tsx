@@ -46,7 +46,7 @@ export async function action({request, context}: Route.ActionArgs) {
       }
     }
 
-    // update customer and possibly password
+
     const {data, errors} = await customerAccount.mutate(
       CUSTOMER_UPDATE_MUTATION,
       {

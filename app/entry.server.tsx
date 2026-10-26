@@ -64,7 +64,7 @@ export default async function handleRequest(
       'http://a.klaviyo.com',
       'https://api-js.datadome.co',
       'https://a.klaviyo.com/client/profiles',
-      'https://9a2355e26bf7.ngrok-free.app ', //FOR LOCAL TESTING USE NGROK TO SUBMIT FROM HTTPS
+      'https://9a2355e26bf7.ngrok-free.app ',
       'https://wyrd.com',
       'https://www.wyrd.com',
       'https://api.emailjs.com',

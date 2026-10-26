@@ -35,8 +35,6 @@ type LightboxImage =
 export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  // true only on devices with a fine pointer (mouse/trackpad) — evaluated
-  // client-side so it's always accurate after hydration
   const [isDesktop, setIsDesktop] = useState(false);
   useEffect(() => {
     setIsDesktop(!window.matchMedia('(pointer: coarse)').matches);
@@ -79,7 +77,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     [isDesktop],
   );
 
-  // Drive label position directly via DOM — desktop only, no re-render per frame
   useEffect(() => {
     if (!isDesktop) return;
     const stage = stageRef.current;
@@ -95,7 +92,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     return () => stage.removeEventListener('mousemove', onMove);
   }, [isDesktop]);
 
-  // Open lightbox — exposed to carousel items via data attribute click
   const openLightbox = useCallback(
     (index: number) => {
       setLightboxIndex(index);
@@ -122,7 +118,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     setLightboxImage(images[next]);
   }, [lightboxIndex, images]);
 
-  // Keyboard navigation for lightbox
   useEffect(() => {
     if (!lightboxImage) return;
     const onKey = (e: KeyboardEvent) => {
@@ -134,55 +129,41 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxImage, closeLightbox, lightboxPrev, lightboxNext]);
 
-  // Infinite auto-scroll carousel
   useEffect(() => {
     const carousel = carouselRef.current;
     if (!carousel || images.length === 0) return;
 
-    const SPEED = 0.3; // px per frame
+    const SPEED = 0.3; 
     let rafId: number;
     let isDragging = false;
     let dragDidMove = false;
     let dragStartX = 0;
     let dragScrollLeft = 0;
-    // Hoisted so touch handlers can read/write them
     let pos = 0;
     let setWidth = 0;
 
-    // Wait one frame for the DOM to paint so offsetWidth is correct
     rafId = requestAnimationFrame(() => {
-      // ── Measure one set width (the middle clone) ─────────────────────────────────
-      // The carousel contains 3× the images: [copy A | original | copy B]
-      // We auto-scroll through the original, and when we hit the start of
-      // copy B we silently jump back to the start of the original.
       const items =
         carousel.querySelectorAll<HTMLElement>('.kt2-carousel-item');
       const setCount = items.length / 3;
 
-      // Width of exactly one full set (gap included)
-      const gap = 20; // must match CSS gap
+      const gap = 20; 
       for (let i = 0; i < setCount; i++) {
         setWidth += items[i].offsetWidth + gap;
       }
 
-      // Start scrolled to the beginning of the original (middle) set
-      // Use a float accumulator so sub-pixel speeds work correctly
       pos = setWidth;
       carousel.scrollLeft = pos;
 
-      // ── Animation tick ────────────────────────────────────────────────────
       const tick = () => {
         if (!isDragging && !isPausedRef.current) {
           pos += SPEED;
 
-          // When we've scrolled past the original into copy B, jump back
           if (pos >= setWidth * 2) pos -= setWidth;
-          // Safety: if dragged before copy A's start, jump forward
           if (pos < 0) pos += setWidth;
 
           carousel.scrollLeft = pos;
         } else {
-          // Keep pos in sync while dragging so auto-scroll resumes smoothly
           pos = carousel.scrollLeft;
         }
         rafId = requestAnimationFrame(tick);
@@ -190,7 +171,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       rafId = requestAnimationFrame(tick);
     });
 
-    // ── Drag to manually scroll ───────────────────────────────────────────
     const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
       dragDidMove = false;
@@ -222,7 +202,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       isPausedRef.current = true;
     };
 
-    // ── Touch swipe ──────────────────────────────────────────────
     let touchStartX = 0;
     let touchScrollLeft = 0;
     let touchDidMove = false;
@@ -239,9 +218,7 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       if (!isDragging) return;
       const walk = (e.touches[0].pageX - touchStartX) * 1.2;
       if (Math.abs(walk) > 6) touchDidMove = true;
-      // Update pos so auto-scroll resumes from the right place
       pos = touchScrollLeft - walk;
-      // Wrap pos within bounds
       if (pos >= setWidth * 2) pos -= setWidth;
       if (pos < 0) pos += setWidth;
       carousel.scrollLeft = pos;
@@ -251,7 +228,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       isDragging = false;
       isPausedRef.current = false;
 
-      // Treat as a tap if the finger barely moved — open lightbox
       if (!touchDidMove) {
         const touch = e.changedTouches[0];
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -265,7 +241,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       }
     };
 
-    // ── Click — open lightbox for the tapped item (any clone) ────────────
     const onClick = (e: MouseEvent) => {
       if (dragDidMove) return;
       const item = (e.target as HTMLElement).closest(
@@ -274,7 +249,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
       if (!item) return;
       const rawIdx = Number(item.dataset.index);
       if (!Number.isNaN(rawIdx)) {
-        // data-index on clones is offset by setCount — mod back to original
         openLightbox(rawIdx % images.length);
       }
     };
@@ -303,14 +277,12 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     };
   }, [isOpen, images, openLightbox]);
 
-  // Visible options (skip single-value options — nothing to choose)
   const visibleOptions = productOptions.filter(
     (o) => o.optionValues.length > 1,
   );
 
   return (
     <div className="kt2-scene">
-      {/* ── Carousel — fades in, centred over the shoebox ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -322,7 +294,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
             exit={{opacity: 0}}
             transition={{duration: 0.5, ease: 'easeOut'}}
           >
-            {/* Triple the images: [copy A | original | copy B] for infinite loop */}
             {[...images, ...images, ...images].map((image, idx) => (
               <div
                 key={`${image.id}-${idx}`}
@@ -350,7 +321,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
         )}
       </AnimatePresence>
 
-      {/* ── Light beam — static PNG behind the canvas ── */}
       <img
         src={lightBeam}
         alt=""
@@ -358,7 +328,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
         className="kt2-light-beam"
       />
 
-      {/* ── Shoebox stage — always centred, never unmounts ── */}
       <div
         className={`kt2-shoebox-stage${isOpen ? ' kt2-shoebox-stage--blurred' : ''}`}
         ref={stageRef}
@@ -366,13 +335,11 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
         <ShoeboxScene onOpen={handleOpen} onHoverChange={handleHoverChange} />
       </div>
 
-      {/* ── Cursor label — follows cursor on desktop, centred on mobile ── */}
       <div
         ref={labelRef}
         className={[
           'kt2-cursor-label',
           isDesktop ? 'kt2-cursor-label--desktop' : 'kt2-cursor-label--mobile',
-          // visible: desktop=when hovering, mobile=until box opens
           !isOpen && (isDesktop ? isHovered : true)
             ? 'kt2-cursor-label--visible'
             : '',
@@ -384,7 +351,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
         What makes Thome a misfit kid?
       </div>
 
-      {/* ── Info panel — slides in from the right when open ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -395,10 +361,8 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
             exit={{opacity: 0, x: 60}}
             transition={{duration: 0.5, delay: 0.2, ease: 'easeOut'}}
           >
-            {/* 1. Product name */}
             <h1 className="kt2-title">{product.title}</h1>
 
-            {/* 2. Product description */}
             {product.descriptionHtml && (
               <div
                 className="kt2-description"
@@ -406,7 +370,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
               />
             )}
 
-            {/* 3. Variant options (only when there's a real choice) */}
             {visibleOptions.length > 0 && (
               <div className="kt2-options">
                 {visibleOptions.map((option) => (
@@ -461,7 +424,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
               </div>
             )}
 
-            {/* 4. Price + Add to cart — same row */}
             <div className="kt2-buy-row">
               <div className="kt2-price">
                 {selectedVariant?.compareAtPrice ? (
@@ -497,7 +459,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* ── Lightbox ── */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -514,7 +475,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
                 aria-modal="true"
                 aria-label="Image lightbox"
               >
-                {/* Centred image — scale up from carousel size */}
                 <motion.div
                   className="kt2-lightbox-img-wrap"
                   initial={{scale: 0.82, opacity: 0}}
@@ -531,7 +491,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
                   />
                 </motion.div>
 
-                {/* Close button */}
                 <button
                   className="kt2-lightbox-btn kt2-lightbox-close"
                   onClick={closeLightbox}
@@ -540,7 +499,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
                   ✕
                 </button>
 
-                {/* Prev */}
                 {images.length > 1 && (
                   <button
                     className="kt2-lightbox-btn kt2-lightbox-prev"
@@ -554,7 +512,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
                   </button>
                 )}
 
-                {/* Next */}
                 {images.length > 1 && (
                   <button
                     className="kt2-lightbox-btn kt2-lightbox-next"
@@ -568,7 +525,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
                   </button>
                 )}
 
-                {/* Counter */}
                 {images.length > 1 && (
                   <div className="kt2-lightbox-counter">
                     {lightboxIndex + 1} / {images.length}

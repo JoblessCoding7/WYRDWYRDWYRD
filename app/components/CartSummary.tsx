@@ -56,7 +56,7 @@ function CartDiscounts({
 
   return (
     <div>
-      {/* Have existing discount, display it with a remove option */}
+      
       <dl hidden={!codes.length}>
         <div>
           <dt>Discount(s)</dt>
@@ -70,7 +70,7 @@ function CartDiscounts({
         </div>
       </dl>
 
-      {/* Show an input to apply a discount */}
+      
       <UpdateDiscountForm discountCodes={codes}>
         <div>
           <input type="text" name="discountCode" placeholder="Discount code" />
@@ -111,7 +111,7 @@ function CartGiftCard({
   const giftCardCodeInput = useRef<HTMLInputElement>(null);
   const giftCardAddFetcher = useFetcher({key: 'gift-card-add'});
 
-  // Clear the gift card code input after the gift card is added
+  
   useEffect(() => {
     if (giftCardAddFetcher.data) {
       giftCardCodeInput.current!.value = '';
@@ -119,7 +119,7 @@ function CartGiftCard({
   }, [giftCardAddFetcher.data]);
 
   function saveAppliedCode(code: string) {
-    const formattedCode = code.replace(/\s/g, ''); // Remove spaces
+    const formattedCode = code.replace(/\s/g, ''); 
     if (!appliedGiftCardCodes.current.includes(formattedCode)) {
       appliedGiftCardCodes.current.push(formattedCode);
     }
@@ -127,7 +127,7 @@ function CartGiftCard({
 
   return (
     <div>
-      {/* Display applied gift cards with individual remove buttons */}
+      
       {giftCardCodes && giftCardCodes.length > 0 && (
         <dl>
           <dt>Applied Gift Card(s)</dt>
@@ -145,7 +145,7 @@ function CartGiftCard({
         </dl>
       )}
 
-      {/* Show an input to apply a gift card */}
+      
       <UpdateGiftCardForm
         giftCardCodes={appliedGiftCardCodes.current}
         saveAppliedCode={saveAppliedCode}

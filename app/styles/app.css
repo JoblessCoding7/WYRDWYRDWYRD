@@ -55,21 +55,13 @@ img {
   border-radius: 4px;
 }
 
-/*
-* --------------------------------------------------
-* Non anchor links
-* --------------------------------------------------
-*/
+
 .link:hover {
   text-decoration: underline;
   cursor: pointer;
 }
 
-/*
-* --------------------------------------------------
-* components/Aside
-* --------------------------------------------------
-*/
+
 @media (max-width: 45em) {
   html:has(.overlay.expanded) {
     overflow: hidden;
@@ -147,7 +139,7 @@ aside li {
   transition: opacity 400ms ease-in-out;
   transition: opacity 400ms;
   visibility: hidden;
-  /* sit above the kt2 scanline layer (9999) */
+  
   z-index: 10001;
 }
 
@@ -178,7 +170,7 @@ aside li {
   pointer-events: auto;
   visibility: visible;
 }
-/* reveal aside */
+
 .overlay.expanded aside {
   transform: translateX(calc(var(--aside-width) * -1));
 }
@@ -203,13 +195,9 @@ button.reset:hover:not(:has(> *)) {
   cursor: pointer;
 }
 
-/*
-* --------------------------------------------------
-* components/Header
-* --------------------------------------------------
-*/
 
-/* ── Cart badge in header ── */
+
+
 .cart-badge {
   font-family: 'Zalando Sans Expanded', sans-serif;
   font-weight: 700;
@@ -233,11 +221,7 @@ button.reset:hover:not(:has(> *)) {
   letter-spacing: 0;
 }
 
-/*
-* --------------------------------------------------
-* components/Search
-* --------------------------------------------------
-*/
+
 .predictive-search {
   height: calc(100vh - var(--header-height) - 40px);
   overflow-y: auto;
@@ -286,11 +270,7 @@ button.reset:hover:not(:has(> *)) {
   gap: 1rem;
 }
 
-/*
-* --------------------------------------------------
-* routes/__index
-* --------------------------------------------------
-*/
+
 .featured-collection {
   display: block;
   margin-bottom: 2rem;
@@ -323,11 +303,7 @@ button.reset:hover:not(:has(> *)) {
   height: auto;
 }
 
-/*
-* --------------------------------------------------
-* routes/collections._index.tsx
-* --------------------------------------------------
-*/
+
 .collections-grid {
   display: grid;
   grid-gap: 1.5rem;
@@ -339,11 +315,7 @@ button.reset:hover:not(:has(> *)) {
   height: auto;
 }
 
-/*
-* --------------------------------------------------
-* routes/collections.$handle.tsx
-* --------------------------------------------------
-*/
+
 .collection-description {
   margin-bottom: 1rem;
   max-width: 95%;
@@ -364,11 +336,7 @@ button.reset:hover:not(:has(> *)) {
   width: 100%;
 }
 
-/*
-* --------------------------------------------------
-* routes/products.$handle.tsx
-* --------------------------------------------------
-*/
+
 .product {
   display: grid;
   @media (min-width: 45em) {
@@ -425,11 +393,7 @@ button.reset:hover:not(:has(> *)) {
   width: 100%;
 }
 
-/*
-* --------------------------------------------------
-* routes/blog._index.tsx
-* --------------------------------------------------
-*/
+
 .blog-grid {
   display: grid;
   grid-gap: 1.5rem;
@@ -446,31 +410,19 @@ button.reset:hover:not(:has(> *)) {
   height: 100%;
 }
 
-/*
-* --------------------------------------------------
-* routes/blog.$articlehandle.tsx
-* --------------------------------------------------
-*/
+
 .article img {
   height: auto;
   width: 100%;
 }
 
-/*
-* --------------------------------------------------
-* routes/account
-* --------------------------------------------------
-*/
+
 
 .account-logout {
   display: inline-block;
 }
 
-/*
-* --------------------------------------------------
-* Order Search Form - Minimal & Responsive
-* --------------------------------------------------
-*/
+
 .order-search-form {
   margin-bottom: 1.5rem;
 }

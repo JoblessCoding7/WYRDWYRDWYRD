@@ -36,18 +36,18 @@ type SearchResultsPredictiveProps = {
   children: (args: SearchResultsPredictiveArgs) => React.ReactNode;
 };
 
-/**
- * Component that renders predictive search results
- */
+
+
+
 export function SearchResultsPredictive({
   children,
 }: SearchResultsPredictiveProps) {
   const aside = useAside();
   const {term, inputRef, fetcher, total, items} = usePredictiveSearch();
 
-  /*
-   * Utility that resets the search input
-   */
+
+
+
   function resetInput() {
     if (inputRef.current) {
       inputRef.current.blur();
@@ -55,9 +55,9 @@ export function SearchResultsPredictive({
     }
   }
 
-  /**
-   * Utility that resets the search input and closes the search aside
-   */
+
+
+
   function closeSearch() {
     resetInput();
     aside.close();
@@ -274,13 +274,13 @@ function SearchResultsPredictiveEmpty({
   );
 }
 
-/**
- * Hook that returns the predictive search results and fetcher and input ref.
- * @example
- * '''ts
- * const { items, total, inputRef, term, fetcher } = usePredictiveSearch();
- * '''
- **/
+
+
+
+
+
+
+
 function usePredictiveSearch(): UsePredictiveSearchReturn {
   const fetcher = useFetcher<PredictiveSearchReturn>({key: 'search'});
   const term = useRef<string>('');
@@ -290,7 +290,7 @@ function usePredictiveSearch(): UsePredictiveSearchReturn {
     term.current = String(fetcher.formData?.get('q') || '');
   }
 
-  // capture the search input element as a ref
+
   useEffect(() => {
     if (!inputRef.current) {
       inputRef.current = document.querySelector('input[type="search"]');

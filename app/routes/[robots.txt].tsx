@@ -57,10 +57,10 @@ Crawl-delay: 1
 `.trim();
 }
 
-/**
- * This function generates disallow rules that generally follow what Shopify's
- * Online Store has as defaults for their robots.txt
- */
+
+
+
+
 function generalDisallowRules({
   shopId,
   sitemapUrl,

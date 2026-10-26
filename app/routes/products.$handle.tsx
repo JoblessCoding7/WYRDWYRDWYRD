@@ -19,7 +19,7 @@ import {motion} from 'framer-motion';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: `${data?.product.title ?? ''}`},
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,
@@ -28,19 +28,19 @@ export const meta: Route.MetaFunction = ({data}) => {
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
+
   const deferredData = loadDeferredData(args);
 
-  // Await the critical data required to render initial state of the page
+
   const criticalData = await loadCriticalData(args);
 
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
+
+
+
+
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
@@ -53,14 +53,14 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
+
   ]);
 
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
+
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
   return {
@@ -68,14 +68,14 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   };
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
+
+
+
+
+
 function loadDeferredData({context, params}: Route.LoaderArgs) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
+
+
 
   return {};
 }
@@ -83,17 +83,17 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 export default function Product() {
   const {product} = useLoaderData<typeof loader>();
 
-  // Optimistically selects a variant with given available variant information
+
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
     getAdjacentAndFirstAvailableVariants(product),
   );
 
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
+
+
   useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
 
-  // Get the product options array
+
   const productOptions = getProductOptions({
     ...product,
     selectedOrFirstAvailableVariant: selectedVariant,
@@ -101,7 +101,7 @@ export default function Product() {
 
   const {title, descriptionHtml} = product;
 
-  // Render the KT2 custom scene for the album-product handle
+
   if (product.handle === 'album-product') {
     return <KT2Scene product={product as any} />;
   }
@@ -158,7 +158,7 @@ function KT2Scene({product}: {product: any}) {
   } | null>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
 
-  // Calculate the full-screen logo target (reverse of _index.tsx shrink)
+
   useEffect(() => {
     const calc = () => {
       const vw = window.innerWidth;
@@ -171,10 +171,10 @@ function KT2Scene({product}: {product: any}) {
         renderedW = vw;
       }
       const headerSize = Math.min(Math.max(vw * 0.06, 40), 80);
-      const scale = renderedW / headerSize; // inverse — grow to full
+      const scale = renderedW / headerSize;
       const headerCenterX = 16 + headerSize / 2;
       const headerCenterY = 16 + headerSize / 2;
-      // From header corner back to screen center
+
       const x = vw / 2 - headerCenterX;
       const y = vh / 2 - headerCenterY;
       setLogoTarget({x, y, scale});
@@ -187,7 +187,7 @@ function KT2Scene({product}: {product: any}) {
   const handleLogoClick = () => {
     if (exiting || !logoTarget) return;
     setExiting(true);
-    // Fade out the scene
+
     if (sceneRef.current) {
       sceneRef.current.style.transition = 'opacity 0.4s ease-out';
       sceneRef.current.style.opacity = '0';
@@ -196,7 +196,7 @@ function KT2Scene({product}: {product: any}) {
 
   return (
     <>
-      {/* Logo starts at header position and expands to fullscreen on exit */}
+      {                                                                      }
       <motion.img
         src={wyrdLogo}
         alt="WYRD"

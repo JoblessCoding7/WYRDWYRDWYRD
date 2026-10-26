@@ -1,10 +1,6 @@
-/*
-* --------------------------------------------------
-* components/Cart
-* --------------------------------------------------
-*/
 
-/* ── Cart aside panel overrides ── */
+
+
 aside {
   font-family: 'Zalando Sans Expanded', sans-serif;
 }
@@ -17,7 +13,7 @@ aside header h3 {
   letter-spacing: 0.1em;
 }
 
-/* close link in aside header */
+
 aside header .close {
   font-family: 'Zalando Sans Expanded', sans-serif;
   font-weight: 700;
@@ -28,7 +24,7 @@ aside header .close {
   width: fit-content;
 }
 
-/* ── Cart line items ── */
+
 .cart-line {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   padding: 0.875rem 0;
@@ -68,7 +64,7 @@ aside header .close {
   font-weight: bold;
 }
 
-/* ── Quantity row ── */
+
 .cart-line-quantity {
   display: flex;
   align-items: center;
@@ -77,7 +73,7 @@ aside header .close {
   margin-top: 8px;
 }
 
-/* ── Quantity stepper pill ────────────────────────────────────────── */
+
 .cart-qty-stepper {
   display: inline-flex;
   align-items: center;
@@ -125,7 +121,7 @@ aside header .close {
   white-space: nowrap;
 }
 
-/* Remove button */
+
 .cart-line-quantity button[aria-label='Remove'],
 .cart-line button[type='submit'] {
   width: auto;
@@ -151,7 +147,7 @@ aside header .close {
   color: #ffffff;
 }
 
-/* ── Cart summary / totals ── */
+
 .cart-subtotal {
   display: flex;
   justify-content: space-between;
@@ -175,7 +171,7 @@ aside header .close {
   color: rgba(0, 0, 0, 0.45);
 }
 
-/* ── Continue to Checkout button ── */
+
 .cart-summary-aside a[href],
 .cart-summary-page a[href] {
   display: block;
@@ -211,7 +207,7 @@ aside header .close {
   transform: translateY(0);
 }
 
-/* ── Discount / gift card inputs ── */
+
 .cart-discount input[type='text'] {
   font-family: 'Zalando Sans Expanded', sans-serif;
   font-size: 0.75rem;

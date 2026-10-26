@@ -26,9 +26,9 @@ export function Header({
   const {shop, menu} = header;
   return (
     <header className="header">
-      {/*<NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
-      </NavLink>*/}
+      {
+
+                  }
       <HeaderMenu
         menu={menu}
         viewport="desktop"
@@ -70,7 +70,7 @@ export function HeaderMenu({
       {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
 
-        // if the url is internal, we strip the domain
+
         const url =
           item.url.includes('myshopify.com') ||
           item.url.includes(publicStoreDomain) ||
@@ -101,15 +101,15 @@ function HeaderCtas({
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
     <nav className="header-ctas" role="navigation">
-      {/*<HeaderMenuMobileToggle />*/}
-      {/*<NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-          </Await>
-        </Suspense>
-      </NavLink>
-      <SearchToggle />*/}
+      {                              }
+      {
+
+
+
+
+
+
+                        }
       <CartToggle cart={cart} />
     </nav>
   );

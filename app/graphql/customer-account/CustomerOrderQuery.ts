@@ -1,4 +1,4 @@
-// NOTE: https://shopify.dev/docs/api/customer/latest/queries/order
+
 export const CUSTOMER_ORDER_QUERY = `#graphql
   fragment OrderMoney on MoneyV2 {
     amount

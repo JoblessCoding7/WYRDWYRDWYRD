@@ -1,4 +1,4 @@
-// NOTE: https://shopify.dev/docs/api/storefront/latest/queries/cart
+
 export const CART_QUERY_FRAGMENT = `#graphql
   fragment Money on MoneyV2 {
     currencyCode

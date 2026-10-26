@@ -1,7 +1,6 @@
 import {useEffect, useRef} from 'react';
 import type {BufferGeometry, Mesh} from 'three';
 
-// Per-face texture imports
 import texBoxBack from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-05-box-side-front-back.png';
 import texBoxFront from '~/assets/shoebox_mapping_textures/KT2_Box mapping-01-box-front-side.png';
 import texBoxLeft from '~/assets/shoebox_mapping_textures/KT2_Box-mapping-04-box-right-side.png';
@@ -16,31 +15,7 @@ interface ShoeboxSceneProps {
   onHoverChange?: (hovered: boolean) => void;
 }
 
-/*
- * ── Dimension derivation ─────────────────────────────────────────────────────
- *
- * All 3-D dimensions come directly from texture pixel aspect ratios.
- * Anchor: LW = 2.8 units (lid length along X).
- *
- * LID textures (px):
- *   lid_side_top   974x722  -> LW x LD
- *   lid_side_back  966x158  -> LW x LH
- *   lid_side_left  156x712  -> LH x LD
- *
- *   LW = 2.8
- *   LD = 2.8 x (722 / 974) x DEPTH_SCALE
- *   LH = 2.8 x (158 / 966)
- *
- * BOX textures (px):
- *   box_side_botom 958x691  -> BW x BH  (front face)
- *   box_side_left  314x690  -> BD x BH
- *   box_side_back  941x322  -> BW x BH  (back/front faces)
- *
- *   BD = LD  (box depth matches lid depth)
- *   BH = BD x (314 / 690)
- *   BW = BD x (958 / 691)
- * ────────────────────────────────────────────────────────────────────────────
- */
+
 
 export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -81,7 +56,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
       ]) => {
         if (disposed || !canvasRef.current) return;
 
-        // ── Renderer ─────────────────────────────────────────────────────────────
         const renderer = new THREE.WebGLRenderer({
           canvas,
           alpha: true,
@@ -98,16 +72,13 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         const H = canvas.offsetHeight || window.innerHeight || 420;
         renderer.setSize(W, H, false);
 
-        // ── Scene / Camera ────────────────────────────────────────────────────────
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
         camera.position.set(-6.764, 2.55, 16);
         camera.lookAt(0, 0.5, 0);
 
-        // ── Lighting ──────────────────────────────────────────────────────────────
         scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
-        // Key light — casts sharp shadows from upper-right
         const dir = new THREE.DirectionalLight(0xffffff, 1.2);
         dir.position.set(4, 8, 6);
         dir.castShadow = true;
@@ -116,22 +87,18 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         dir.shadow.camera.far = 30;
         scene.add(dir);
 
-        // Fill light — cool-tinted from the left to soften shadows
         const fill = new THREE.DirectionalLight(0xddeeff, 0.25);
         fill.position.set(-5, 2, -2);
         scene.add(fill);
 
-        // Specular point light — gives the gloss hotspot on the box surface
         const spec = new THREE.PointLight(0xffffff, 1.6, 18);
         spec.position.set(2, 5, 7);
         scene.add(spec);
 
-        // Rim light — subtle back-edge highlight
         const rim = new THREE.DirectionalLight(0xffffff, 0.2);
         rim.position.set(-2, -1, -6);
         scene.add(rim);
 
-        // ── Environment map (PMREM from neutral grey) for physical reflections ──
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         pmremGenerator.compileEquirectangularShader();
         const neutralEnv = pmremGenerator.fromScene(
@@ -140,25 +107,20 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         scene.environment = neutralEnv;
         pmremGenerator.dispose();
 
-        // ── Post-processing (clean / glossy) ─────────────────────────────────────
         const composer = new EffectComposer(renderer);
 
-        // 1. Base render
         composer.addPass(new RenderPass(scene, camera));
 
-        // 2. Subtle bloom — just enough to make specular highlights glow
         const bloomPass = new UnrealBloomPass(
           new THREE.Vector2(W, H),
-          0.18, // strength  — very restrained
-          0.4, // radius
-          0.88, // threshold — only the brightest highlights bloom
+          0.18, 
+          0.4, 
+          0.88, 
         );
         composer.addPass(bloomPass);
 
-        // 3. Output (tone-mapping + sRGB conversion)
         composer.addPass(new OutputPass());
 
-        // ── Helpers ───────────────────────────────────────────────────────────────
         const loader = new THREE.TextureLoader();
 
         function loadTex(src: string) {
@@ -170,7 +132,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         const geometries: BufferGeometry[] = [];
         const materials: InstanceType<typeof THREE.MeshStandardMaterial>[] = [];
 
-        // Plain colour face — used for all interior surfaces
         function makeColorFace(w: number, h: number, color = 0x333333): Mesh {
           const geo = new THREE.PlaneGeometry(w, h);
           geometries.push(geo);
@@ -191,43 +152,38 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         ): Mesh {
           const geo = new THREE.PlaneGeometry(w, h);
           geometries.push(geo);
-          // MeshPhysicalMaterial gives us roughness + clearcoat for a glossy finish
           const mat = new THREE.MeshPhysicalMaterial({
             map: tex,
             side: THREE.DoubleSide,
-            roughness: 0.25, // low roughness = sharp specular highlight
-            metalness: 0.0, // cardboard, not metal
-            clearcoat: 0.6, // lacquer-style gloss layer on top
+            roughness: 0.25, 
+            metalness: 0.0, 
+            clearcoat: 0.6, 
             clearcoatRoughness: 0.1,
-            envMapIntensity: 1.2, // how strongly it reflects the env map
-            transparent: true, // respect PNG alpha channel
-            alphaTest: 0.01, // discard pixels below 1% opacity
+            envMapIntensity: 1.2, 
+            transparent: true, 
+            alphaTest: 0.01, 
           });
           materials.push(mat as any);
           return new THREE.Mesh(geo, mat);
         }
 
-        // ── Dimensions ───────────────────────────────────────────────────────────
         const LW = 2.8;
         const DEPTH_SCALE = 1.6;
         const LD = LW * (722 / 974) * DEPTH_SCALE;
-        const LH = LW * (158 / 966) * 1.5; // taller lid
-        const LID_OVERHANG = 0.28; // how far lid rim drops below box top
+        const LH = LW * (158 / 966) * 1.5; 
+        const LID_OVERHANG = 0.28; 
 
-        // ── Root group — lid + box animate together ───────────────────────────────
         const rootGroup = new THREE.Group();
         scene.add(rootGroup);
 
-        // ── Lid ───────────────────────────────────────────────────────────────────
         const lidPivot = new THREE.Group();
         rootGroup.add(lidPivot);
 
         const lidGroup = new THREE.Group();
-        // Lower lid so the rim drops LID_OVERHANG below the box top (y=0)
         lidGroup.position.set(0, LH / 2 - LID_OVERHANG, LD / 2);
         lidPivot.add(lidGroup);
 
-        const LID_W = (LW / 1.12) * 2; // wider — overhangs box sides
+        const LID_W = (LW / 1.12) * 2; 
 
         const lTop = makeFace(LID_W, LD, loadTex(texLidTop));
         lTop.rotation.x = -Math.PI / 2;
@@ -261,15 +217,13 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         lRight.position.set(LW / 1.12, 0, 0);
         lidGroup.add(lRight);
 
-        // Lid interior bottom — off-black, no texture
         const lInside = makeColorFace(LID_W, LD);
         lInside.rotation.x = Math.PI / 2;
         lInside.position.set(0, -LH / 2, 0);
         lidGroup.add(lInside);
 
-        // ── Box ───────────────────────────────────────────────────────────────────
         const BD = LD;
-        const BH = BD * (314 / 690) * 0.8; // shorter box
+        const BH = BD * (314 / 690) * 0.8; 
         const BW = BD * (958 / 691);
         const BOX_INSET = 0.1;
 
@@ -311,13 +265,11 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         bBottom.position.set(0, -BH / 2, 0);
         boxGroup.add(bBottom);
 
-        // Box interior top opening — off-black face visible when lid lifts
         const bInterior = makeColorFace(BW, BD);
         bInterior.rotation.x = Math.PI / 2;
         bInterior.position.set(0, BH / 2, 0);
         boxGroup.add(bInterior);
 
-        // ── Raycasting ────────────────────────────────────────────────────────────
         const lidMeshes: Mesh[] = [];
         lidGroup.traverse((obj) => {
           if ((obj as Mesh).isMesh) lidMeshes.push(obj as Mesh);
@@ -327,21 +279,19 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
           if ((obj as Mesh).isMesh) allMeshes.push(obj as Mesh);
         });
 
-        // ── Interaction state ─────────────────────────────────────────────────────
         let isOpen = false;
         let isHovered = false;
         let onOpenCalled = false;
         let currentAngle = 0;
         let isEngaged = false;
 
-        // ── Drag to rotate rootGroup ──────────────────────────────────────────────
         let isDragging = false;
-        let dragDidMove = false; // true once pointer moved enough to count as a drag
+        let dragDidMove = false; 
         let prevMouseX = 0;
         let prevMouseY = 0;
         let dragStartX = 0;
         let dragStartY = 0;
-        const DRAG_THRESHOLD = 4; // px — below this a press is treated as a click
+        const DRAG_THRESHOLD = 4; 
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -360,9 +310,7 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
           return raycaster.intersectObjects(allMeshes, false).length > 0;
         };
 
-        // ── Mouse drag ────────────────────────────────────────────────────────────
         const onMouseDown = (e: MouseEvent) => {
-          // Only start a drag when the press lands on the box
           setNDC(e);
           if (!hitsBox()) return;
           isDragging = true;
@@ -378,7 +326,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
           const dx = e.clientX - prevMouseX;
           const dy = e.clientY - prevMouseY;
 
-          // Mark as a real drag once the pointer has moved past the threshold
           if (!dragDidMove) {
             const totalDx = e.clientX - dragStartX;
             const totalDy = e.clientY - dragStartY;
@@ -390,7 +337,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
           }
 
           rootGroup.rotation.y += dx * 0.005;
-          // Clamp vertical tilt so the box doesn't flip upside-down
           rootGroup.rotation.x = Math.max(
             -Math.PI / 4,
             Math.min(Math.PI / 4, rootGroup.rotation.x + dy * 0.005),
@@ -412,7 +358,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         };
 
         const onMouseLeave = () => {
-          // Reset hover / engaged state when the cursor leaves the canvas
           if (!isOpen) {
             isHovered = false;
             isEngaged = false;
@@ -432,7 +377,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         };
 
         const onClick = (e: MouseEvent) => {
-          // Suppress the click if the user actually dragged
           if (isDragging || dragDidMove) return;
           if (isOpen) return;
           setNDC(e);
@@ -445,7 +389,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
           }
         };
 
-        // ── Touch drag ────────────────────────────────────────────────────────────
         let prevTouchX = 0;
         let prevTouchY = 0;
         let touchDragDidMove = false;
@@ -496,7 +439,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
           if (!isDragging) return;
           isDragging = false;
 
-          // Treat as a tap → open if the touch barely moved
           if (!touchDragDidMove && !isOpen) {
             const t = e.changedTouches[0];
             setNDCFromClient(t.clientX, t.clientY);
@@ -519,11 +461,9 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
         canvas.addEventListener('touchend', onTouchEnd);
         window.addEventListener('mouseup', onMouseUp);
 
-        // ── Animation loop ────────────────────────────────────────────────────────
         const animate = () => {
           animFrameId = requestAnimationFrame(animate);
 
-          // Responsive resize
           const cw = canvas.offsetWidth;
           const ch = canvas.offsetHeight;
           if (
@@ -537,13 +477,11 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
             camera.updateProjectionMatrix();
           }
 
-          // Idle — rotate and bob when not engaged and not dragging
           if (!isEngaged && !isDragging) {
             const t = performance.now() * 0.001;
             rootGroup.rotation.y += 0.001;
             rootGroup.position.y = Math.sin(t * 2) * 0.5;
           } else if (isEngaged && !isDragging) {
-            // Snap rotation and bob back to 0 on hover
             rootGroup.rotation.x += (0 - rootGroup.rotation.x) * 0.06;
             rootGroup.rotation.y += (0 - rootGroup.rotation.y) * 0.06;
             rootGroup.position.y += (0 - rootGroup.position.y) * 0.06;
@@ -560,7 +498,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
 
           composer.render();
 
-          // Fade in the canvas on the first rendered frame
           if (canvas.style.opacity === '0') {
             canvas.style.opacity = '1';
           }
@@ -568,7 +505,6 @@ export function ShoeboxScene({onOpen, onHoverChange}: ShoeboxSceneProps) {
 
         animate();
 
-        // ── Cleanup ───────────────────────────────────────────────────────────────
         const cleanup = () => {
           cancelAnimationFrame(animFrameId);
           canvas.removeEventListener('mousedown', onMouseDown);

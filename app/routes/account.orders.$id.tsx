@@ -32,19 +32,19 @@ export async function loader({params, context}: Route.LoaderArgs) {
 
   const {order} = data;
 
-  // Extract line items directly from nodes array
+
   const lineItems = order.lineItems.nodes;
 
-  // Extract discount applications directly from nodes array
+
   const discountApplications = order.discountApplications.nodes;
 
-  // Get fulfillment status from first fulfillment node
+
   const fulfillmentStatus = order.fulfillments.nodes[0]?.status ?? 'N/A';
 
-  // Get first discount value with proper type checking
+
   const firstDiscount = discountApplications[0]?.value;
 
-  // Type guard for MoneyV2 discount
+
   const discountValue =
     firstDiscount?.__typename === 'MoneyV2'
       ? (firstDiscount as Extract<
@@ -53,7 +53,7 @@ export async function loader({params, context}: Route.LoaderArgs) {
         >)
       : null;
 
-  // Type guard for percentage discount
+
   const discountPercentage =
     firstDiscount?.__typename === 'PricingPercentageValue'
       ? (

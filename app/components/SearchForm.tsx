@@ -7,25 +7,25 @@ type SearchFormProps = Omit<FormProps, 'children'> & {
   }) => React.ReactNode;
 };
 
-/**
- * Search form component that sends search requests to the `/search` route.
- * @example
- * ```tsx
- * <SearchForm>
- *  {({inputRef}) => (
- *    <>
- *      <input
- *        ref={inputRef}
- *        type="search"
- *        defaultValue={term}
- *        name="q"
- *        placeholder="Search…"
- *      />
- *      <button type="submit">Search</button>
- *   </>
- *  )}
- *  </SearchForm>
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export function SearchForm({children, ...props}: SearchFormProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -42,11 +42,11 @@ export function SearchForm({children, ...props}: SearchFormProps) {
   );
 }
 
-/**
- * Focuses the input when cmd+k is pressed
- */
+
+
+
 function useFocusOnCmdK(inputRef: React.RefObject<HTMLInputElement>) {
-  // focus the input when cmd+k is pressed
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'k' && event.metaKey) {
