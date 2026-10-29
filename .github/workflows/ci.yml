@@ -24,7 +24,7 @@ jobs:
         run: npm install -g pnpm@10.17.0
 
       - name: Install dependencies
-        # Not frozen while the dependency set is changing; the resolved lockfile is uploaded below.
+        # Not frozen while the dependency set is changing; the resolved lockfile is committed below.
         run: pnpm install --no-frozen-lockfile
 
       - name: Commit resolved lockfile
@@ -37,13 +37,35 @@ jobs:
             git push
           fi
 
-      - run: pnpm typecheck
-      - run: pnpm lint
-      - run: pnpm test
-      - run: pnpm build
+      - name: Typecheck
+        run: |
+          pnpm typecheck > typecheck.log 2>&1 && exit 0
+          cat typecheck.log
+          echo "::error title=Typecheck::$(tail -60 typecheck.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g' -e 's/\r/%0D/g' -e 's/\n/%0A/g')"
+          exit 1
+      - name: Lint
+        run: |
+          pnpm lint > lint.log 2>&1 && exit 0
+          cat lint.log
+          echo "::error title=Lint::$(tail -60 lint.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g' -e 's/\r/%0D/g' -e 's/\n/%0A/g')"
+          exit 1
+      - name: Test
+        run: |
+          pnpm test > test.log 2>&1 && exit 0
+          cat test.log
+          echo "::error title=Test::$(tail -60 test.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g' -e 's/\r/%0D/g' -e 's/\n/%0A/g')"
+          exit 1
+      - name: Build
+        run: |
+          pnpm build > build.log 2>&1 && exit 0
+          cat build.log
+          echo "::error title=Build::$(tail -60 build.log | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g' -e 's/\r/%0D/g' -e 's/\n/%0A/g')"
+          exit 1
 
       - name: Smoke test (same start command as docs/deploy.md, mock provider)
         run: |
+          set -e
+          trap 'echo "::error title=Smoke test::failed at line $LINENO: $BASH_COMMAND"' ERR
           cp .env.example .env
           node --env-file=.env node_modules/@react-router/serve/bin.js ./build/server/index.js > server.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:3000/ > /dev/null && break; sleep 1; done
@@ -59,5 +81,7 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/youzan/webhook -d '{}')" = 503
 
       - name: Server log
-        if: always()
-        run: cat server.log || true
+        if: failure()
+        run: |
+          cat server.log || true
+          echo "::error title=Server log::$(tail -60 server.log 2>/dev/null | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g' -e 's/\n/%0A/g')"
