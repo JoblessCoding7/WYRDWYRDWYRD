@@ -34,6 +34,8 @@ type CartContextValue = {
   totalQuantity: number;
   subtotalLabel: string;
   add: (line: CartLineInput) => void;
+  /** Refresh title/price/image of a line already in the cart (quantity kept). */
+  sync: (line: CartLineInput) => void;
   setQuantity: (productId: string, quantity: number) => void;
   remove: (productId: string) => void;
   checkout: () => Promise<void>;
@@ -98,6 +100,21 @@ export function CartProvider({children}: {children: ReactNode}) {
     });
   }, []);
 
+  const sync = useCallback((input: CartLineInput) => {
+    setLines((current) => {
+      const existing = current.find((l) => l.productId === input.productId);
+      if (
+        !existing ||
+        (existing.unitPrice === input.unitPrice &&
+          existing.title === input.title &&
+          existing.imageUrl === input.imageUrl)
+      ) {
+        return current;
+      }
+      return current.map((l) => (l.productId === input.productId ? {...l, ...input} : l));
+    });
+  }, []);
+
   const setQuantity = useCallback((productId: string, quantity: number) => {
     setLines((current) =>
       quantity <= 0
@@ -141,12 +158,13 @@ export function CartProvider({children}: {children: ReactNode}) {
       totalQuantity,
       subtotalLabel: formatOfferPrice(Math.round(subtotal * 100) / 100),
       add,
+      sync,
       setQuantity,
       remove,
       checkout,
       checkoutState,
     };
-  }, [lines, add, setQuantity, remove, checkout, checkoutState]);
+  }, [lines, add, sync, setQuantity, remove, checkout, checkoutState]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

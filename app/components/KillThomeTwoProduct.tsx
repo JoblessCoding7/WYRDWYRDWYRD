@@ -6,6 +6,7 @@ import {ShoeboxScene} from '~/components/ShoeboxScene';
 import lightBeam from '~/assets/Light Beam.png';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {useAside} from '~/components/Aside';
+import {useCart} from '~/lib/cart';
 
 export type Kt2ProductView = {
   productId: string;
@@ -46,7 +47,20 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
   const images = product.images;
 
   const {open} = useAside();
+  const {sync} = useCart();
   const {offer} = product;
+  const cartLine = {
+    productId: product.productId,
+    title: product.title,
+    unitPrice: offer.unitPrice,
+    imageUrl: product.images[0]?.url ?? null,
+  };
+
+  // A cart saved earlier may hold an old price; show the current one.
+  useEffect(() => {
+    if (offer.isAvailable) sync(cartLine);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sync, offer.isAvailable, offer.unitPrice, product.productId, product.title]);
 
   const handleOpen = useCallback(() => {
     setIsOpen(true);
@@ -354,12 +368,7 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
               <AddToCartButton
                 disabled={!offer.isAvailable}
                 onClick={() => open('cart')}
-                line={{
-                  productId: product.productId,
-                  title: product.title,
-                  unitPrice: offer.unitPrice,
-                  imageUrl: product.images[0]?.url ?? null,
-                }}
+                line={cartLine}
               >
                 {offer.isAvailable ? 'Add to cart' : 'Sold out'}
               </AddToCartButton>
