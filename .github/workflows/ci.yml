@@ -6,7 +6,7 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write # only to commit the resolved pnpm-lock.yaml back to feature branches
 
 jobs:
   check:
@@ -27,11 +27,15 @@ jobs:
         # Not frozen while the dependency set is changing; the resolved lockfile is uploaded below.
         run: pnpm install --no-frozen-lockfile
 
-      - name: Upload resolved lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: pnpm-lock
-          path: pnpm-lock.yaml
+      - name: Commit resolved lockfile
+        if: github.event_name == 'push'
+        run: |
+          if ! git diff --quiet -- pnpm-lock.yaml; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update pnpm-lock.yaml" -- pnpm-lock.yaml
+            git push
+          fi
 
       - run: pnpm typecheck
       - run: pnpm lint

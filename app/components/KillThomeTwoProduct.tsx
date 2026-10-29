@@ -25,8 +25,7 @@ interface KillThomeTwoProductProps {
   product: Kt2ProductView;
 }
 
-type LightboxImage =
-  KillThomeTwoProductProps['product']['images']['nodes'][number];
+type LightboxImage = Kt2ProductView['images'][number];
 
 export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,7 +43,7 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const cursorPos = useRef({x: 0, y: 0});
   const isPausedRef = useRef(false);
-  const images = product.images.nodes;
+  const images = product.images;
 
   const {open} = useAside();
   const {offer} = product;
