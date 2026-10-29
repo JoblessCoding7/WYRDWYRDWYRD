@@ -1,4 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&display=swap');
+/* Self-hosted (Google Fonts is unreachable in mainland China). OFL license: /fonts/OFL.txt */
+@font-face {
+  font-family: 'Zalando Sans Expanded';
+  src: url('/fonts/zalando-sans-expanded.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --aside-width: 500px;

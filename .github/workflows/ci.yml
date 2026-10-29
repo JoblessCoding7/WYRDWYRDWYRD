@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.17.0
+
+      - name: Install dependencies
+        # Not frozen while the dependency set is changing; the resolved lockfile is uploaded below.
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Upload resolved lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-lock
+          path: pnpm-lock.yaml
+
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+      - name: Smoke test (same start command as docs/deploy.md, mock provider)
+        run: |
+          cp .env.example .env
+          node --env-file=.env node_modules/@react-router/serve/bin.js ./build/server/index.js > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/ > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3000/ | grep -q '<html'
+          curl -sf http://localhost:3000/products/album-product | grep -q 'KILL THOME 2'
+          curl -sf http://localhost:3000/api/products/kt2 | tee /dev/stderr | grep -q '"source":"mock"'
+          curl -sf -X POST http://localhost:3000/api/checkout \
+            -H 'content-type: application/json' \
+            -d '{"lineItems":[{"productId":"kt2-limited-edition-merch","quantity":2}]}' \
+            | tee /dev/stderr | grep -q '/checkout/mock?quantity=2'
+          curl -sf 'http://localhost:3000/checkout/mock?quantity=2' | grep -q '结账演示'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/products/nope)" = 404
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/youzan/webhook -d '{}')" = 503
+
+      - name: Server log
+        if: always()
+        run: cat server.log || true

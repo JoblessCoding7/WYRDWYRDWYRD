@@ -1,5 +1,8 @@
 name: Storefront 1000056396
-on: [push]
+# Only main deploys to Shopify Oxygen; feature branches (e.g. the China build) must not.
+on:
+  push:
+    branches: [main]
 
 permissions:
   contents: read

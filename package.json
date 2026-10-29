@@ -1,55 +1,49 @@
 {
-  "name": "wyrd-hydrogen",
+  "name": "wyrd",
   "private": true,
   "sideEffects": false,
-  "version": "2025.7.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "postinstall": "node scripts/patch-hydrogen-react.mjs",
-    "build": "shopify hydrogen build --codegen",
-    "dev": "shopify hydrogen dev --codegen",
-    "preview": "shopify hydrogen preview --build",
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
     "lint": "eslint --no-error-on-unmatched-pattern .",
     "typecheck": "react-router typegen && tsc --noEmit",
-    "codegen": "shopify hydrogen codegen && react-router typegen"
+    "test": "vitest run",
+    "youzan:probe": "node --env-file=.env scripts/youzan-probe.mjs"
   },
   "prettier": "@shopify/prettier-config",
   "onlyBuiltDependencies": [
     "esbuild",
-    "unrs-resolver",
-    "workerd"
+    "unrs-resolver"
   ],
   "dependencies": {
-    "@shopify/hydrogen": "2025.7.0",
+    "@react-router/node": "7.9.2",
+    "@react-router/serve": "7.9.2",
     "@types/matter-js": "^0.20.2",
     "@types/three": "^0.183.1",
     "framer-motion": "^12.23.24",
-    "graphql": "^16.10.0",
-    "graphql-tag": "^2.12.6",
     "isbot": "^5.1.22",
-    "use-isomorphic-layout-effect": "^1.1.2",
     "matter-js": "^0.20.0",
     "react": "18.3.1",
     "react-device-detect": "^2.2.3",
     "react-dom": "18.3.1",
     "react-router": "7.9.2",
     "react-router-dom": "7.9.2",
-    "three": "^0.183.2"
+    "three": "^0.183.2",
+    "use-isomorphic-layout-effect": "^1.1.2"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.5",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "@graphql-codegen/cli": "5.0.2",
     "@react-router/dev": "7.9.2",
     "@react-router/fs-routes": "7.9.2",
-    "@shopify/cli": "3.85.4",
-    "@shopify/hydrogen-codegen": "^0.3.3",
-    "@shopify/mini-oxygen": "^4.0.0",
-    "@shopify/oxygen-workers-types": "^4.1.6",
     "@shopify/prettier-config": "^1.1.2",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/eslint": "^9.6.1",
+    "@types/node": "^22.10.0",
     "@types/react": "^18.2.22",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^8.21.0",
@@ -67,9 +61,10 @@
     "prettier": "^3.4.2",
     "typescript": "^5.9.2",
     "vite": "^6.2.4",
-    "vite-tsconfig-paths": "^4.3.1"
+    "vite-tsconfig-paths": "^4.3.1",
+    "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.6.0"
   }
 }

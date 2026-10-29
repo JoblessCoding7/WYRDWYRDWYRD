@@ -1,32 +1,28 @@
-import type {ProductFragment} from 'storefrontapi.generated';
-import {
-  Money,
-  useOptimisticVariant,
-  getProductOptions,
-  getAdjacentAndFirstAvailableVariants,
-  useSelectedOptionInUrlParam,
-} from '@shopify/hydrogen';
 import {useState, useCallback, useRef, useEffect} from 'react';
 import {createPortal} from 'react-dom';
 import {motion, AnimatePresence} from 'framer-motion';
-import {useNavigate} from 'react-router';
+import type {ProductOffer} from '~/lib/product-offer';
 import {ShoeboxScene} from '~/components/ShoeboxScene';
 import lightBeam from '~/assets/Light Beam.png';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {useAside} from '~/components/Aside';
 
+export type Kt2ProductView = {
+  productId: string;
+  title: string;
+  descriptionHtml: string;
+  images: Array<{
+    id: string;
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+  }>;
+  offer: ProductOffer;
+};
+
 interface KillThomeTwoProductProps {
-  product: ProductFragment & {
-    images: {
-      nodes: Array<{
-        id: string;
-        url: string;
-        altText: string | null;
-        width: number;
-        height: number;
-      }>;
-    };
-  };
+  product: Kt2ProductView;
 }
 
 type LightboxImage =
@@ -50,20 +46,8 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
   const isPausedRef = useRef(false);
   const images = product.images.nodes;
 
-  const navigate = useNavigate();
   const {open} = useAside();
-
-  const selectedVariant = useOptimisticVariant(
-    product.selectedOrFirstAvailableVariant,
-    getAdjacentAndFirstAvailableVariants(product),
-  );
-
-  useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
-
-  const productOptions = getProductOptions({
-    ...product,
-    selectedOrFirstAvailableVariant: selectedVariant,
-  });
+  const {offer} = product;
 
   const handleOpen = useCallback(() => {
     setIsOpen(true);
@@ -277,10 +261,6 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
     };
   }, [isOpen, images, openLightbox]);
 
-  const visibleOptions = productOptions.filter(
-    (o) => o.optionValues.length > 1,
-  );
-
   return (
     <div className="kt2-scene">
       <AnimatePresence>
@@ -370,90 +350,19 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
               />
             )}
 
-            {visibleOptions.length > 0 && (
-              <div className="kt2-options">
-                {visibleOptions.map((option) => (
-                  <div className="kt2-option-group" key={option.name}>
-                    <h5 className="kt2-option-name">{option.name}</h5>
-                    <div className="kt2-option-values">
-                      {option.optionValues.map((value) => {
-                        const {
-                          name,
-                          handle,
-                          variantUriQuery,
-                          selected,
-                          available,
-                          exists,
-                          isDifferentProduct,
-                        } = value;
-
-                        if (isDifferentProduct) {
-                          return (
-                            <a
-                              key={option.name + name}
-                              href={`/products/${handle}?${variantUriQuery}`}
-                              className={`kt2-option-btn${selected ? ' kt2-option-btn--selected' : ''}${!available ? ' kt2-option-btn--unavailable' : ''}`}
-                            >
-                              {name}
-                            </a>
-                          );
-                        }
-
-                        return (
-                          <button
-                            key={option.name + name}
-                            type="button"
-                            disabled={!exists}
-                            className={`kt2-option-btn${selected ? ' kt2-option-btn--selected' : ''}${!available ? ' kt2-option-btn--unavailable' : ''}`}
-                            onClick={() => {
-                              if (!selected) {
-                                void navigate(`?${variantUriQuery}`, {
-                                  replace: true,
-                                  preventScrollReset: true,
-                                });
-                              }
-                            }}
-                          >
-                            {name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
             <div className="kt2-buy-row">
-              <div className="kt2-price">
-                {selectedVariant?.compareAtPrice ? (
-                  <div className="kt2-price-sale">
-                    <Money data={selectedVariant.price} />
-                    <s>
-                      <Money data={selectedVariant.compareAtPrice} />
-                    </s>
-                  </div>
-                ) : selectedVariant?.price ? (
-                  <Money data={selectedVariant.price} />
-                ) : null}
-              </div>
-
+              <div className="kt2-price">{offer.priceLabel}</div>
               <AddToCartButton
-                disabled={!selectedVariant || !selectedVariant.availableForSale}
+                disabled={!offer.isAvailable}
                 onClick={() => open('cart')}
-                lines={
-                  selectedVariant
-                    ? [
-                        {
-                          merchandiseId: selectedVariant.id,
-                          quantity: 1,
-                          selectedVariant,
-                        },
-                      ]
-                    : []
-                }
+                line={{
+                  productId: product.productId,
+                  title: product.title,
+                  unitPrice: offer.unitPrice,
+                  imageUrl: product.images[0]?.url ?? null,
+                }}
               >
-                {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+                {offer.isAvailable ? 'Add to cart' : 'Sold out'}
               </AddToCartButton>
             </div>
           </motion.div>

@@ -1,13 +1,6 @@
 import type {Config} from '@react-router/dev/config';
-import {hydrogenPreset} from '@shopify/hydrogen/react-router-preset';
 
-
-
-
-
-
-
-
+// Plain React Router app served by Node (react-router-serve), for a mainland-China server.
 export default {
-  presets: [hydrogenPreset()],
+  ssr: true,
 } satisfies Config;
