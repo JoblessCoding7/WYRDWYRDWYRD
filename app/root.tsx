@@ -25,7 +25,6 @@ import {PageLayout} from './components/PageLayout';
 
 export function links() {
   return [
-    {rel: 'preconnect', href: 'https://img.yzcdn.cn'},
     {
       rel: 'preload',
       href: '/fonts/zalando-sans-expanded.ttf',

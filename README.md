@@ -1,7 +1,7 @@
 # WYRD
 
 WYRD 官网商城（中国大陆版）。前端是 WYRD 自己的设计（开场 logo 动画、3D 鞋盒、KT2 商品体验），
-交易交给有赞：价格、库存、商品图从有赞读取，买家在有赞收银台付款，订单由聚水潭从有赞拉取发货。
+交易交给有赞：价格和库存从有赞读取（轮播里的 merch 内容物图片和文案是 WYRD 自己的，在 `app/content/kt2.ts`），买家在有赞收银台付款，订单由聚水潭从有赞拉取发货。
 
 ```
 浏览器 → WYRD 网站（React Router，Node）→ 有赞（读商品 / 生成下单页）→ 有赞收银台付款
@@ -38,7 +38,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 | `app/routes/api.youzan.webhook.tsx` | 有赞消息推送（验签） |
 | `app/lib/commerce/` | 商城提供方接口：`mock`、`youzan`；海外 Shopify 以后作为新的提供方加入 |
 | `app/lib/youzan/` | 有赞 token、API、商品解析、下单页、推送验签 |
-| `app/content/kt2.ts` | KT2 标题和描述文案 |
+| `app/content/kt2.ts` + `public/kt2/` | KT2 标题、描述和轮播图（merch 内容物） |
 
 ## 文档
 

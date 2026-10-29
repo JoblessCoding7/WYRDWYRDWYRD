@@ -21,16 +21,17 @@ export async function loader({params}: Route.LoaderArgs) {
     throw new Response(null, {status: 404});
   }
 
-  // Price, stock and photos from the commerce provider (Youzan), copy from content/kt2.
+  // Price and stock from the commerce provider (Youzan); copy and carousel images
+  // are WYRD design content from content/kt2.
   const offer = await getKt2Offer();
   const product: Kt2ProductView = {
     productId: kt2StorefrontProductId,
     title: kt2Content.title,
     descriptionHtml: kt2Content.descriptionHtml,
-    images: offer.images.map((image, index) => ({
-      id: `kt2-image-${index}`,
-      url: image.url,
-      altText: `${kt2Content.title} ${index + 1}`,
+    images: kt2Content.images.map((image) => ({
+      id: image.src,
+      url: image.src,
+      altText: image.alt,
       width: image.width,
       height: image.height,
     })),
