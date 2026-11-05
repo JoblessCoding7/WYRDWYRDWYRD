@@ -46,32 +46,15 @@ export function CartLineItem({layout, line}: {layout: CartLayout; line: CartLine
 }
 
 function CartLineQuantity({line}: {line: CartLine}) {
-  const {setQuantity, remove} = useCart();
-  const {productId, quantity} = line;
+  const {remove} = useCart();
 
+  // One KT2 per order (see maxQuantity in lib/cart): no stepper, just the count.
   return (
     <div className="cart-line-quantity">
       <div className="cart-qty-stepper">
-        <button
-          type="button"
-          className="cart-qty-btn"
-          aria-label="Decrease quantity"
-          disabled={quantity <= 1}
-          onClick={() => setQuantity(productId, quantity - 1)}
-        >
-          &#8722;
-        </button>
-        <span className="cart-qty-count">{quantity}</span>
-        <button
-          type="button"
-          className="cart-qty-btn"
-          aria-label="Increase quantity"
-          onClick={() => setQuantity(productId, quantity + 1)}
-        >
-          &#43;
-        </button>
+        <span className="cart-qty-count">×{line.quantity}</span>
       </div>
-      <button type="submit" onClick={() => remove(productId)}>
+      <button type="submit" onClick={() => remove(line.productId)}>
         Remove
       </button>
     </div>

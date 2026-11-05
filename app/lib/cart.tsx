@@ -27,7 +27,13 @@ export type CartLine = {
 export type CartLineInput = Omit<CartLine, 'quantity'>;
 
 const storageKey = 'wyrd-cart-v1';
-const maxQuantity = 999;
+/**
+ * One KT2 per order. Youzan's pre-filled order page (which would carry the
+ * quantity) needs a capability package we don't have, so the buyer lands on
+ * the Youzan product page and picks the quantity there; keeping our cart at 1
+ * avoids showing a number that doesn't carry over. Raise when that changes.
+ */
+export const maxQuantity = 1;
 
 type CartContextValue = {
   lines: CartLine[];
@@ -39,6 +45,8 @@ type CartContextValue = {
   setQuantity: (productId: string, quantity: number) => void;
   remove: (productId: string) => void;
   checkout: () => Promise<void>;
+  /** Skip the cart: check out this one item right away. */
+  buyNow: (line: CartLineInput) => Promise<void>;
   checkoutState: 'idle' | 'pending' | 'error';
 };
 
@@ -61,7 +69,11 @@ function isCartLine(value: unknown): value is CartLine {
 function readStoredLines(): CartLine[] {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(storageKey) ?? '[]');
-    return Array.isArray(parsed) ? parsed.filter(isCartLine) : [];
+    return Array.isArray(parsed)
+      ? parsed
+          .filter(isCartLine)
+          .map((l) => ({...l, quantity: Math.min(l.quantity, maxQuantity)}))
+      : [];
   } catch {
     return [];
   }
@@ -131,24 +143,35 @@ export function CartProvider({children}: {children: ReactNode}) {
     setLines((current) => current.filter((l) => l.productId !== productId));
   }, []);
 
-  const checkout = useCallback(async () => {
-    if (lines.length === 0 || checkoutState === 'pending') return;
-    setCheckoutState('pending');
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          lineItems: lines.map(({productId, quantity}) => ({productId, quantity})),
-        }),
-      });
-      const body: unknown = await response.json();
-      if (!response.ok || !isCheckoutSession(body)) throw new Error('checkout');
-      window.location.assign(body.checkoutUrl);
-    } catch {
-      setCheckoutState('error');
-    }
-  }, [lines, checkoutState]);
+  const startCheckout = useCallback(
+    async (items: Array<{productId: string; quantity: number}>) => {
+      if (items.length === 0 || checkoutState === 'pending') return;
+      setCheckoutState('pending');
+      try {
+        const response = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({lineItems: items}),
+        });
+        const body: unknown = await response.json();
+        if (!response.ok || !isCheckoutSession(body)) throw new Error('checkout');
+        window.location.assign(body.checkoutUrl);
+      } catch {
+        setCheckoutState('error');
+      }
+    },
+    [checkoutState],
+  );
+
+  const checkout = useCallback(
+    () => startCheckout(lines.map(({productId, quantity}) => ({productId, quantity}))),
+    [lines, startCheckout],
+  );
+
+  const buyNow = useCallback(
+    (input: CartLineInput) => startCheckout([{productId: input.productId, quantity: 1}]),
+    [startCheckout],
+  );
 
   const value = useMemo<CartContextValue>(() => {
     const totalQuantity = lines.reduce((sum, l) => sum + l.quantity, 0);
@@ -162,9 +185,10 @@ export function CartProvider({children}: {children: ReactNode}) {
       setQuantity,
       remove,
       checkout,
+      buyNow,
       checkoutState,
     };
-  }, [lines, add, sync, setQuantity, remove, checkout, checkoutState]);
+  }, [lines, add, sync, setQuantity, remove, checkout, buyNow, checkoutState]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

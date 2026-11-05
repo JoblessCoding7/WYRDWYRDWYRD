@@ -4,8 +4,6 @@ import {motion, AnimatePresence} from 'framer-motion';
 import type {ProductOffer} from '~/lib/product-offer';
 import {ShoeboxScene} from '~/components/ShoeboxScene';
 import lightBeam from '~/assets/Light Beam.png';
-import {AddToCartButton} from '~/components/AddToCartButton';
-import {useAside} from '~/components/Aside';
 import {useCart} from '~/lib/cart';
 
 export type Kt2ProductView = {
@@ -46,8 +44,7 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
   const isPausedRef = useRef(false);
   const images = product.images;
 
-  const {open} = useAside();
-  const {sync} = useCart();
+  const {sync, buyNow, checkoutState} = useCart();
   const {offer} = product;
   const cartLine = {
     productId: product.productId,
@@ -365,14 +362,30 @@ export function KillThomeTwoProduct({product}: KillThomeTwoProductProps) {
 
             <div className="kt2-buy-row">
               <div className="kt2-price">{offer.priceLabel}</div>
-              <AddToCartButton
-                disabled={!offer.isAvailable}
-                onClick={() => open('cart')}
-                line={cartLine}
+              {/* Same <form><button type="submit"> shape the styles target. */}
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void buyNow(cartLine);
+                }}
               >
-                {offer.isAvailable ? 'Add to cart' : 'Sold out'}
-              </AddToCartButton>
+                <button
+                  type="submit"
+                  disabled={!offer.isAvailable || checkoutState === 'pending'}
+                >
+                  {!offer.isAvailable
+                    ? 'Sold out'
+                    : checkoutState === 'pending'
+                      ? 'Opening…'
+                      : 'Buy now'}
+                </button>
+              </form>
             </div>
+            {checkoutState === 'error' ? (
+              <p className="kt2-buy-error" role="alert">
+                Checkout is unavailable right now — please try again.
+              </p>
+            ) : null}
           </motion.div>
         )}
       </AnimatePresence>

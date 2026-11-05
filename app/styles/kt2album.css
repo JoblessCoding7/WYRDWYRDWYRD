@@ -617,3 +617,9 @@
     font-size: 0.65rem;
   }
 }
+
+.kt2-buy-error {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #b00020;
+}
